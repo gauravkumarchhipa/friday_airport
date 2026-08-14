@@ -6,7 +6,8 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { memo, useCallback, useRef } from "react";
+import Link from "next/link";
+import { memo, useRef } from "react";
 
 import { FridayLogo } from "@/components/common/friday-logo";
 import {
@@ -22,33 +23,30 @@ const ICON_CLASS = "h-5 w-5 shrink-0";
 export type SidebarNavItem = {
   id: string;
   label: string;
+  href: string;
   icon?: LucideIcon;
 };
 
-type SidebarNavButtonProps = {
+type SidebarNavLinkProps = {
   item: SidebarNavItem;
   active: boolean;
   collapsed: boolean;
-  onSelect: (id: string) => void;
 };
 
-const SidebarNavButton = memo(function SidebarNavButton({
+const SidebarNavLink = memo(function SidebarNavLink({
   item,
   active,
   collapsed,
-  onSelect,
-}: SidebarNavButtonProps) {
+}: SidebarNavLinkProps) {
   const labelRef = useRef<HTMLSpanElement>(null);
   // Collapsed → always tooltip; expanded → only when label shows "…"
   const shouldOpen = useTruncationGate(labelRef, collapsed);
   const Icon = item.icon;
-  const handleClick = useCallback(() => onSelect(item.id), [onSelect, item.id]);
 
   return (
     <GlassTooltipWrap label={item.label} enabled shouldOpen={shouldOpen}>
-      <button
-        type="button"
-        onClick={handleClick}
+      <Link
+        href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
           navLink({ active, layout: "row" }),
@@ -62,7 +60,7 @@ const SidebarNavButton = memo(function SidebarNavButton({
             {item.label}
           </span>
         )}
-      </button>
+      </Link>
     </GlassTooltipWrap>
   );
 });
@@ -71,7 +69,6 @@ type DashboardSidebarProps = {
   navItems: readonly SidebarNavItem[];
   active: string;
   collapsed: boolean;
-  onSelect: (id: string) => void;
   onToggle: () => void;
   onSignOut?: () => void;
 };
@@ -80,7 +77,6 @@ function DashboardSidebarComponent({
   navItems,
   active,
   collapsed,
-  onSelect,
   onToggle,
   onSignOut,
 }: DashboardSidebarProps) {
@@ -107,12 +103,11 @@ function DashboardSidebarComponent({
 
         <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-2 py-2 text-sm">
           {navItems.map((item) => (
-            <SidebarNavButton
+            <SidebarNavLink
               key={item.id}
               item={item}
               active={item.id === active}
               collapsed={collapsed}
-              onSelect={onSelect}
             />
           ))}
         </nav>

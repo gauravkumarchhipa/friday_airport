@@ -1,5 +1,7 @@
-import { CheckInOpsView } from "@/components/afterlogin/check-in-ops/check-in-ops-view";
+import { redirect } from "next/navigation";
+
+import { CHECK_IN_OPS_DEFAULT_HREF } from "@/data/afterlogin/check-in-ops/tabs";
 
 export default function HomePage() {
-  return <CheckInOpsView />;
+  redirect(CHECK_IN_OPS_DEFAULT_HREF);
 }

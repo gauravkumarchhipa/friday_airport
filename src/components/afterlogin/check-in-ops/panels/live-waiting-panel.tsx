@@ -121,14 +121,9 @@ const FLIGHT_COLUMNS = defineColumns<FlightUrgencyRow>(
 
 const FLIGHT_FILTER_CONFIGS = buildFilterConfigsFromColumns(FLIGHT_COLUMNS);
 
-export function LiveWaitingPanel({
-  onOpenCounterAction,
-  focusCounterId,
-}: {
-  onOpenCounterAction?: (counterId: string) => void;
-  focusCounterId?: string | null;
-}) {
+export function LiveWaitingPanel() {
   const [airlineFilter, setAirlineFilter] = useState("VJ");
+  const [focusCounterId, setFocusCounterId] = useState<string | null>(null);
   const view = useMemo(() => getLiveView(airlineFilter), [airlineFilter]);
 
   const flightRows = useMemo<FlightUrgencyRow[]>(
@@ -278,7 +273,7 @@ export function LiveWaitingPanel({
         >
           <LiveQueueMap
             counters={view.counters}
-            onSelectCounter={onOpenCounterAction}
+            onSelectCounter={setFocusCounterId}
             focusCounterId={focusCounterId}
             className="h-full"
           />
@@ -378,7 +373,7 @@ export function LiveWaitingPanel({
                   size="sm"
                   className="mt-3 w-full"
                   onClick={() =>
-                    onOpenCounterAction?.(primaryAction.counterId ?? "C12")
+                    setFocusCounterId(primaryAction.counterId ?? "C12")
                   }
                 >
                   {primaryAction.counterId
