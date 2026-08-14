@@ -13,13 +13,12 @@ import {
   mutedCol,
   textCol,
 } from "@/components/common/data-table-columns";
-import { FormSelect } from "@/components/common/form-select";
 import { FridayButton } from "@/components/common/friday-button";
 import {
+  CHECK_IN_META,
   getLiveView,
-  LIVE_AIRLINE_FILTER_OPTIONS,
 } from "@/data/afterlogin/check-in-ops/static-data";
-import type { FlightUrgency } from "@/data/afterlogin/check-in-ops/types";
+import type { CounterLive, FlightUrgency } from "@/data/afterlogin/check-in-ops/types";
 import { useDataTableControls } from "@/hooks/common/use-data-table-controls";
 import { cn } from "@/lib/common/utils";
 
@@ -59,8 +58,8 @@ const FLIGHT_COLUMNS = defineColumns<FlightUrgencyRow>(
     sortable: true,
     filter: true,
   }),
-  mutedCol("Join wait", (row) => `${row.aveWaitMin.toFixed(0)} min`, {
-    className: "min-w-[5.5rem]",
+  mutedCol("Est. join wait", (row) => `${row.aveWaitMin.toFixed(0)} min`, {
+    className: "min-w-[7.5rem]",
     headerAlign: "left",
     align: "left",
     sortable: true,
@@ -122,10 +121,67 @@ const FLIGHT_COLUMNS = defineColumns<FlightUrgencyRow>(
 
 const FLIGHT_FILTER_CONFIGS = buildFilterConfigsFromColumns(FLIGHT_COLUMNS);
 
+const COUNTER_COLUMNS = defineColumns<CounterLive>(
+  textCol("Counter", (row) => row.id, {
+    className: "min-w-[5rem] font-medium text-white",
+    textClassName: "font-medium text-white",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: true,
+  }),
+  mutedCol("Zone", (row) => `Zone ${row.zone}`, {
+    className: "min-w-[5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: true,
+  }),
+  mutedCol("Est. join wait", (row) => `${row.joinWaitP50.toFixed(1)} min`, {
+    className: "min-w-[7.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: "Mins" },
+  }),
+  mutedCol("Queue", (row) => row.queueLen, {
+    className: "min-w-[4.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: "Queue" },
+  }),
+  mutedCol(">5m", (row) => (row.waiting5m > 0 ? row.waiting5m : "—"), {
+    id: "counter-over-5m",
+    className: "min-w-[3.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: ">5m" },
+  }),
+  mutedCol(">10m", (row) => (row.waiting10m > 0 ? row.waiting10m : "—"), {
+    id: "counter-over-10m",
+    className: "min-w-[3.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: ">10m" },
+  }),
+  cellCol("Status", (row) => <StatusPill status={row.status} />, {
+    className: "min-w-[6.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: true,
+  }),
+);
+
+const COUNTER_FILTER_CONFIGS = buildFilterConfigsFromColumns(COUNTER_COLUMNS);
+
 export function LiveWaitingPanel() {
   const searchParams = useSearchParams();
   const counterFromUrl = searchParams.get("counter");
-  const [airlineFilter, setAirlineFilter] = useState("VJ");
+  const [airlineFilter] = useState("VJ");
   const [focusCounterId, setFocusCounterId] = useState<string | null>(counterFromUrl);
 
   useEffect(() => {
@@ -158,7 +214,7 @@ export function LiveWaitingPanel() {
           return row.flight;
         case "std":
           return row.std;
-        case "join-wait":
+        case "est-join-wait":
           return row.aveWaitMin;
         case "queue":
           return row.queue;
@@ -178,6 +234,34 @@ export function LiveWaitingPanel() {
     },
   });
 
+  const countersTable = useDataTableControls({
+    rows: view.counters,
+    sorting: true,
+    filtering: true,
+    filterConfigs: COUNTER_FILTER_CONFIGS,
+    mode: "client",
+    getSortValue: (row, columnId) => {
+      switch (columnId) {
+        case "counter":
+          return row.id;
+        case "zone":
+          return row.zone;
+        case "est-join-wait":
+          return row.joinWaitP50;
+        case "queue":
+          return row.queueLen;
+        case "counter-over-5m":
+          return row.waiting5m;
+        case "counter-over-10m":
+          return row.waiting10m;
+        case "status":
+          return statusLabel(row.status);
+        default:
+          return "";
+      }
+    },
+  });
+
   const focus = view.focusFlight;
   const risk = view.risk;
   const primaryAction = view.actions.find((a) => a.severity === "critical") ?? view.actions[0];
@@ -189,20 +273,7 @@ export function LiveWaitingPanel() {
           <h3 className="text-[16px] font-semibold text-white">Live Waiting Time</h3>
           <LiveStatusBadge />
         </div>
-        <FormSelect
-          options={[...LIVE_AIRLINE_FILTER_OPTIONS]}
-          value={airlineFilter}
-          onValueChange={(value) => {
-            if (value) setAirlineFilter(value);
-          }}
-          searchable={false}
-          clearable={false}
-          surface="transparent"
-          variant="square"
-          inputSize="sm"
-          containerClassName="w-[12.5rem] shrink-0"
-          aria-label="Airline filter"
-        />
+        <span className="text-[12px] text-white/45">{CHECK_IN_META.carrier}</span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -249,7 +320,7 @@ export function LiveWaitingPanel() {
             columns={FLIGHT_COLUMNS}
             rows={flightsTable.displayRows}
             getRowKey={(row) => row.flight}
-            minWidthClass="min-w-[640px]"
+            minWidthClass="min-w-[760px]"
             scrollClassName="friday-slim-scrollbar h-full max-h-[420px] min-h-0 overflow-y-auto"
             sorting={flightsTable.sortingEnabled}
             filtering={flightsTable.filteringEnabled}
@@ -265,7 +336,7 @@ export function LiveWaitingPanel() {
               )
             }
             emptyMessage="No flights match your filters"
-            emptyDescription="Try changing the airline or column filters, or clear them to show all flights."
+            emptyDescription="Try changing column filters, or clear them to show all Vietjet flights."
             emptyActionLabel="Clear filters"
             onEmptyAction={flightsTable.clearAllControls}
             pageKey={airlineFilter}
@@ -286,6 +357,35 @@ export function LiveWaitingPanel() {
           />
         </OpsCard>
       </div>
+
+      <OpsCard title="Counter dwell — >5 min and >10 min" flush fill className="min-h-0">
+        <DataTable
+          columns={COUNTER_COLUMNS}
+          rows={countersTable.displayRows}
+          getRowKey={(row) => row.id}
+          minWidthClass="min-w-[760px]"
+          scrollClassName="friday-slim-scrollbar max-h-[280px] min-h-0 overflow-y-auto"
+          sorting={countersTable.sortingEnabled}
+          filtering={countersTable.filteringEnabled}
+          sortState={countersTable.sortState}
+          filterState={countersTable.filterState}
+          onSortCycle={countersTable.cycleSort}
+          onFilterApply={countersTable.applyFilter}
+          onFilterClear={countersTable.clearFilter}
+          rowClassName={(row) =>
+            cn(
+              row.status === "critical" && "bg-red-500/15",
+              row.status === "warning" && "bg-amber-500/10",
+              focusCounterId === row.id && "outline outline-1 outline-white/25",
+            )
+          }
+          emptyMessage="No counters match your filters"
+          emptyDescription="Try changing column filters, or clear them to show all counters."
+          emptyActionLabel="Clear filters"
+          onEmptyAction={countersTable.clearAllControls}
+          pageKey={airlineFilter}
+        />
+      </OpsCard>
 
       <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
         <OpsCard title="Current focus flight" fill className="h-full">
@@ -309,7 +409,7 @@ export function LiveWaitingPanel() {
               </p>
             </>
           ) : (
-            <p className="text-[13px] text-white/45">No flights for this airline filter.</p>
+            <p className="text-[13px] text-white/45">No Vietjet flights in this window.</p>
           )}
         </OpsCard>
 
@@ -328,7 +428,7 @@ export function LiveWaitingPanel() {
             <>
               <p className="text-[12px] text-white/45">{risk.zone}</p>
               <p className="mt-2 text-[18px] font-semibold text-white sm:text-[20px]">
-                Join wait:{" "}
+                Est. join wait:{" "}
                 <span className="text-red-200">{risk.joinWaitMin} min</span>
               </p>
               <p className="mt-1 text-[13px] font-medium text-red-300">
@@ -336,7 +436,7 @@ export function LiveWaitingPanel() {
               </p>
               <div className="mt-3 space-y-2 text-[13px]">
                 <div className="flex justify-between border border-red-400/25 bg-red-500/10 px-3 py-2">
-                  <span className="text-white/70">Join wait</span>
+                  <span className="text-white/70">Est. join wait</span>
                   <span className="font-semibold text-red-200">{risk.joinWaitMin} min</span>
                 </div>
                 <div className="flex justify-between border border-amber-400/25 bg-amber-500/10 px-3 py-2">

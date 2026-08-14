@@ -17,6 +17,7 @@ import {
 import { DashboardSurfaceCard } from "@/components/common/dashboard-surface-card";
 import { FormSelect } from "@/components/common/form-select";
 import {
+  CHECK_IN_META,
   HALL_BY_TERMINAL,
   TERMINAL_FILTER_OPTIONS,
 } from "@/data/afterlogin/check-in-ops/static-data";
@@ -159,16 +160,16 @@ function HallSlaChart({ series }: { series: SlaPoint[] }) {
 }
 
 const COUNTER_COLUMNS = defineColumns<HallCounter>(
-  textCol("Airline", (row) => row.bank, {
-    className: "min-w-[4rem] font-medium text-white",
-    textClassName: "font-medium text-white",
+  mutedCol("Island", (row) => row.island, {
+    className: "min-w-[6rem]",
     headerAlign: "left",
     align: "left",
     sortable: true,
     filter: true,
   }),
-  mutedCol("Counter", (row) => row.id, {
-    className: "min-w-[4.5rem]",
+  textCol("Counter", (row) => row.id, {
+    className: "min-w-[4.5rem] font-medium text-white",
+    textClassName: "font-medium text-white",
     headerAlign: "left",
     align: "left",
     sortable: true,
@@ -181,12 +182,28 @@ const COUNTER_COLUMNS = defineColumns<HallCounter>(
     sortable: true,
     filter: { type: "number", placeholder: "Queue pax" },
   }),
-  mutedCol("Wait", (row) => `${row.waitMin} mins`, {
-    className: "min-w-[5rem]",
+  mutedCol("Est. join wait", (row) => `${row.waitMin} mins`, {
+    className: "min-w-[7.5rem]",
     headerAlign: "left",
     align: "left",
     sortable: true,
     filter: { type: "number", placeholder: "Wait mins" },
+  }),
+  mutedCol(">5m", (row) => (row.waiting5m > 0 ? row.waiting5m : "—"), {
+    id: "over-5m",
+    className: "min-w-[3.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: ">5m" },
+  }),
+  mutedCol(">10m", (row) => (row.waiting10m > 0 ? row.waiting10m : "—"), {
+    id: "over-10m",
+    className: "min-w-[3.5rem]",
+    headerAlign: "left",
+    align: "left",
+    sortable: true,
+    filter: { type: "number", placeholder: ">10m" },
   }),
   mutedCol("Utilisation", (row) => `${row.utilisation}%`, {
     className: "min-w-[5.5rem]",
@@ -217,8 +234,9 @@ const COUNTER_COLUMNS = defineColumns<HallCounter>(
 );
 
 const BREACH_COLUMNS = defineColumns<BreachAttribution>(
-  textCol("Airline", (row) => row.group, {
-    className: "min-w-[8rem] font-medium text-white",
+  textCol("Island / row", (row) => row.group, {
+    id: "island-row",
+    className: "min-w-[10rem] font-medium text-white",
     textClassName: "font-medium text-white",
     headerAlign: "left",
     align: "left",
@@ -263,14 +281,18 @@ export function HallPerformancePanel() {
     mode: "client",
     getSortValue: (row, columnId) => {
       switch (columnId) {
-        case "airline":
-          return row.bank;
+        case "island":
+          return row.island;
         case "counter":
           return row.id;
         case "queue":
           return row.queue;
-        case "wait":
+        case "est-join-wait":
           return row.waitMin;
+        case "over-5m":
+          return row.waiting5m;
+        case "over-10m":
+          return row.waiting10m;
         case "utilisation":
           return row.utilisation;
         case "status":
@@ -289,7 +311,7 @@ export function HallPerformancePanel() {
     mode: "client",
     getSortValue: (row, columnId) => {
       switch (columnId) {
-        case "airline":
+        case "island-row":
           return row.group;
         case "count":
           return row.count;
@@ -307,7 +329,7 @@ export function HallPerformancePanel() {
         <div>
           <h3 className="text-[16px] font-semibold text-white">Hall Performance</h3>
           <p className="text-[12px] text-white/40">
-            {terminalLabel} · refreshed every 30–60s (static demo)
+            {terminalLabel} · Vietjet Air · {CHECK_IN_META.reportingPeriod}
           </p>
         </div>
         <FormSelect
@@ -359,13 +381,13 @@ export function HallPerformancePanel() {
           <HallSlaChart series={hall.slaSeries} />
         </OpsCard>
 
-        <OpsCard title="Airline Counter Overview" flush fill className="min-h-[320px]">
+        <OpsCard title="Counter overview" flush fill className="min-h-[320px]">
           <div className="flex min-h-0 flex-1 flex-col">
             <DataTable
               columns={COUNTER_COLUMNS}
               rows={countersTable.displayRows}
               getRowKey={(row) => row.id}
-              minWidthClass="min-w-[560px]"
+              minWidthClass="min-w-[760px]"
               scrollClassName="friday-slim-scrollbar h-full min-h-0 overflow-y-auto"
               sorting={countersTable.sortingEnabled}
               filtering={countersTable.filteringEnabled}

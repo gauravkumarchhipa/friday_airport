@@ -30,14 +30,13 @@ export const CHECK_IN_META = {
   refreshedAt: "14:32:08",
   alertLatencyMs: 18_400,
   privacyBadge: "Anonymous points · no video · on-prem",
+  reportingPeriod: "11 Aug 2026 – 17 Aug 2026",
+  reportingFrom: "2026-08-11",
+  reportingTo: "2026-08-17",
 } as const;
 
 export const LIVE_AIRLINE_FILTER_OPTIONS = [
-  { value: "all", label: "All Airlines" },
-  { value: "VJ", label: "VJ - Vietjet Air" },
-  { value: "KQ", label: "KQ - Kenya Airways" },
-  { value: "AB", label: "AB" },
-  { value: "CD", label: "CD" },
+  { value: "VJ", label: "Vietjet Air (VJ)" },
 ] as const;
 
 export const LIVE_COUNTERS: CounterLive[] = [
@@ -149,150 +148,6 @@ export const LIVE_COUNTERS: CounterLive[] = [
     x: 28,
     y: 68,
   },
-  {
-    id: "C03",
-    airline: "KQ",
-    zone: "A",
-    row: "Row 1",
-    queueLen: 10,
-    joinWaitP50: 4.1,
-    joinWaitP95: 5.9,
-    waiting5m: 2,
-    waiting10m: 0,
-    serviceRate: 1.7,
-    capacityDeficit: 0.1,
-    breachInMin: null,
-    recoveryMin: null,
-    status: "stable",
-    x: 18,
-    y: 28,
-  },
-  {
-    id: "C07",
-    airline: "KQ",
-    zone: "A",
-    row: "Row 1",
-    queueLen: 16,
-    joinWaitP50: 7.2,
-    joinWaitP95: 9.8,
-    waiting5m: 8,
-    waiting10m: 1,
-    serviceRate: 1.3,
-    capacityDeficit: 0.5,
-    breachInMin: 11,
-    recoveryMin: 10,
-    status: "warning",
-    x: 34,
-    y: 30,
-  },
-  {
-    id: "C12",
-    airline: "KQ",
-    zone: "B",
-    row: "Row 3",
-    queueLen: 34,
-    joinWaitP50: 13.1,
-    joinWaitP95: 17.4,
-    waiting5m: 18,
-    waiting10m: 9,
-    serviceRate: 1.0,
-    capacityDeficit: 1.8,
-    breachInMin: 5,
-    recoveryMin: 22,
-    status: "critical",
-    x: 62,
-    y: 55,
-  },
-  {
-    id: "C14",
-    airline: "KQ",
-    zone: "B",
-    row: "Row 3",
-    queueLen: 20,
-    joinWaitP50: 8.4,
-    joinWaitP95: 11.2,
-    waiting5m: 7,
-    waiting10m: 2,
-    serviceRate: 1.3,
-    capacityDeficit: 0.7,
-    breachInMin: 10,
-    recoveryMin: 12,
-    status: "warning",
-    x: 78,
-    y: 52,
-  },
-  {
-    id: "C03",
-    airline: "AB",
-    zone: "A",
-    row: "Row 1",
-    queueLen: 6,
-    joinWaitP50: 2.8,
-    joinWaitP95: 3.9,
-    waiting5m: 0,
-    waiting10m: 0,
-    serviceRate: 1.9,
-    capacityDeficit: -0.2,
-    breachInMin: null,
-    recoveryMin: null,
-    status: "underutilized",
-    x: 18,
-    y: 28,
-  },
-  {
-    id: "C18",
-    airline: "AB",
-    zone: "C",
-    row: "Row 2",
-    queueLen: 9,
-    joinWaitP50: 4.6,
-    joinWaitP95: 6.0,
-    waiting5m: 2,
-    waiting10m: 0,
-    serviceRate: 1.6,
-    capacityDeficit: 0.1,
-    breachInMin: 24,
-    recoveryMin: 5,
-    status: "busy",
-    x: 48,
-    y: 72,
-  },
-  {
-    id: "C07",
-    airline: "CD",
-    zone: "A",
-    row: "Row 1",
-    queueLen: 12,
-    joinWaitP50: 5.4,
-    joinWaitP95: 7.1,
-    waiting5m: 4,
-    waiting10m: 0,
-    serviceRate: 1.5,
-    capacityDeficit: 0.2,
-    breachInMin: 16,
-    recoveryMin: 8,
-    status: "busy",
-    x: 34,
-    y: 30,
-  },
-  {
-    id: "C21",
-    airline: "CD",
-    zone: "C",
-    row: "Row 2",
-    queueLen: 15,
-    joinWaitP50: 6.9,
-    joinWaitP95: 9.1,
-    waiting5m: 5,
-    waiting10m: 1,
-    serviceRate: 1.4,
-    capacityDeficit: 0.4,
-    breachInMin: 13,
-    recoveryMin: 9,
-    status: "warning",
-    x: 28,
-    y: 68,
-  },
 ];
 
 export const FLIGHTS_BY_URGENCY: FlightUrgency[] = [
@@ -349,108 +204,30 @@ export const FLIGHTS_BY_URGENCY: FlightUrgency[] = [
     closureInMin: 78,
   },
   {
-    flight: "KQ123",
-    airline: "KQ",
-    std: "08:10",
-    aveWaitMin: 13.1,
-    queue: 34,
-    breachInMin: 5,
-    recoveryMin: 22,
+    flight: "VJ201",
+    airline: "VJ",
+    std: "16:40",
+    aveWaitMin: 9.2,
+    queue: 22,
+    breachInMin: 9,
+    recoveryMin: 14,
     status: "critical",
-    counterGroup: "Row 3 · C12–C14",
-    paxRemaining: 132,
-    closureInMin: 39,
-  },
-  {
-    flight: "KQ145",
-    airline: "KQ",
-    std: "08:40",
-    aveWaitMin: 7.2,
-    queue: 16,
-    breachInMin: 11,
-    recoveryMin: 10,
-    status: "warning",
-    counterGroup: "Row 1 · C07",
-    paxRemaining: 88,
-    closureInMin: 54,
-  },
-  {
-    flight: "KQ167",
-    airline: "KQ",
-    std: "09:15",
-    aveWaitMin: 4.1,
-    queue: 10,
-    breachInMin: null,
-    recoveryMin: null,
-    status: "stable",
-    counterGroup: "Row 1 · C03",
-    paxRemaining: 64,
-    closureInMin: 72,
-  },
-  {
-    flight: "KQ201",
-    airline: "KQ",
-    std: "09:45",
-    aveWaitMin: 3.2,
-    queue: 7,
-    breachInMin: null,
-    recoveryMin: null,
-    status: "stable",
     counterGroup: "Row 3 · C14",
-    paxRemaining: 51,
-    closureInMin: 90,
+    paxRemaining: 154,
+    closureInMin: 28,
   },
   {
-    flight: "AB110",
-    airline: "AB",
-    std: "12:20",
-    aveWaitMin: 4.6,
-    queue: 9,
-    breachInMin: 24,
-    recoveryMin: 5,
-    status: "busy",
-    counterGroup: "Row 2 · C18",
-    paxRemaining: 58,
-    closureInMin: 45,
-  },
-  {
-    flight: "AB122",
-    airline: "AB",
-    std: "13:05",
-    aveWaitMin: 2.8,
-    queue: 6,
+    flight: "VJ218",
+    airline: "VJ",
+    std: "17:05",
+    aveWaitMin: 3.4,
+    queue: 8,
     breachInMin: null,
     recoveryMin: null,
-    status: "underutilized",
-    counterGroup: "Row 1 · C03",
-    paxRemaining: 41,
-    closureInMin: 68,
-  },
-  {
-    flight: "CD240",
-    airline: "CD",
-    std: "11:30",
-    aveWaitMin: 6.9,
-    queue: 15,
-    breachInMin: 13,
-    recoveryMin: 9,
-    status: "warning",
-    counterGroup: "Row 2 · C21",
-    paxRemaining: 77,
-    closureInMin: 41,
-  },
-  {
-    flight: "CD255",
-    airline: "CD",
-    std: "12:00",
-    aveWaitMin: 5.4,
-    queue: 12,
-    breachInMin: 16,
-    recoveryMin: 8,
-    status: "busy",
-    counterGroup: "Row 1 · C07",
-    paxRemaining: 63,
-    closureInMin: 55,
+    status: "stable",
+    counterGroup: "Row 2 · C18",
+    paxRemaining: 62,
+    closureInMin: 88,
   },
 ];
 
@@ -458,9 +235,9 @@ export const SUGGESTED_ACTIONS: SuggestedAction[] = [
   {
     id: "a1",
     airline: "VJ",
-    text: "Open +1 counter at Row 3 (C15) for VJ123 — breach in 7 min.",
+    text: "Open +1 counter at Row 3 (C12) for VJ123 — breach predicted in 7 min.",
     severity: "critical",
-    counterId: "C15",
+    counterId: "C12",
   },
   {
     id: "a2",
@@ -472,57 +249,9 @@ export const SUGGESTED_ACTIONS: SuggestedAction[] = [
   {
     id: "a3",
     airline: "VJ",
-    text: "Pre-open C09 at 14:50 for VJ145 morning backlog risk.",
-    severity: "info",
-    counterId: "C09",
-  },
-  {
-    id: "a4",
-    airline: "KQ",
-    text: "Open +1 counter at Row 3 (KQ bank) immediately for KQ123.",
-    severity: "critical",
-    counterId: "C12",
-  },
-  {
-    id: "a5",
-    airline: "KQ",
-    text: "Pull 1 staff from KQ145 (stable lane) to KQ123.",
-    severity: "warn",
-    counterId: "C07",
-  },
-  {
-    id: "a6",
-    airline: "KQ",
-    text: "Announce bag-drop only for prepared passengers on KQ123.",
-    severity: "info",
-  },
-  {
-    id: "a7",
-    airline: "AB",
-    text: "Monitor AB110 at C18 — wait climbing toward SLA edge.",
-    severity: "warn",
-    counterId: "C18",
-  },
-  {
-    id: "a8",
-    airline: "AB",
-    text: "Keep C03 underutilised bank ready as AB surge buffer.",
+    text: "Pre-open C03 at 14:50 for VJ145 morning backlog risk.",
     severity: "info",
     counterId: "C03",
-  },
-  {
-    id: "a9",
-    airline: "CD",
-    text: "Add flex agent to C21 for CD240 — warning wait 6.9 min.",
-    severity: "warn",
-    counterId: "C21",
-  },
-  {
-    id: "a10",
-    airline: "CD",
-    text: "Stagger CD255 bag acceptance to protect C07 throughput.",
-    severity: "info",
-    counterId: "C07",
   },
 ];
 
@@ -654,7 +383,7 @@ export const HALL_SLA_SERIES: SlaPoint[] = [
 export const HALL_COUNTERS: HallCounter[] = [
   {
     id: "C12",
-    bank: "KQ",
+    bank: "VJ",
     island: "Island B",
     row: "Row 3",
     queue: 41,
@@ -666,7 +395,7 @@ export const HALL_COUNTERS: HallCounter[] = [
   },
   {
     id: "C13",
-    bank: "KQ",
+    bank: "VJ",
     island: "Island B",
     row: "Row 3",
     queue: 35,
@@ -677,10 +406,10 @@ export const HALL_COUNTERS: HallCounter[] = [
     waiting10m: 7,
   },
   {
-    id: "B05",
-    bank: "CD",
+    id: "C07",
+    bank: "VJ",
     island: "Island A",
-    row: "Row 2",
+    row: "Row 1",
     queue: 24,
     waitMin: 11,
     utilisation: 78,
@@ -689,10 +418,10 @@ export const HALL_COUNTERS: HallCounter[] = [
     waiting10m: 2,
   },
   {
-    id: "B06",
-    bank: "CD",
+    id: "C03",
+    bank: "VJ",
     island: "Island A",
-    row: "Row 2",
+    row: "Row 1",
     queue: 9,
     waitMin: 5,
     utilisation: 52,
@@ -702,9 +431,9 @@ export const HALL_COUNTERS: HallCounter[] = [
   },
   {
     id: "C21",
-    bank: "UX",
+    bank: "VJ",
     island: "Island C",
-    row: "Row 1",
+    row: "Row 2",
     queue: 17,
     waitMin: 9,
     utilisation: 73,
@@ -713,10 +442,10 @@ export const HALL_COUNTERS: HallCounter[] = [
     waiting10m: 1,
   },
   {
-    id: "A01",
-    bank: "AB",
+    id: "C18",
+    bank: "VJ",
     island: "Island C",
-    row: "Row 1",
+    row: "Row 2",
     queue: 6,
     waitMin: 3,
     utilisation: 38,
@@ -727,9 +456,9 @@ export const HALL_COUNTERS: HallCounter[] = [
 ];
 
 export const BREACH_ATTRIBUTION: BreachAttribution[] = [
-  { group: "KQ", count: 1, worstEpisode: "22 mins" },
-  { group: "CD", count: 1, worstEpisode: "14 mins" },
-  { group: "UX", count: 2, worstEpisode: "9 mins" },
+  { group: "Island B · Row 3", count: 2, worstEpisode: "19 mins" },
+  { group: "Island A · Row 1", count: 1, worstEpisode: "11 mins" },
+  { group: "Island C · Row 2", count: 1, worstEpisode: "9 mins" },
 ];
 
 export const HALL_ALERT_TILES: HallAlertTile[] = [
@@ -832,7 +561,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "E02",
-        bank: "QH",
+        bank: "VJ",
         island: "Island E",
         row: "Row 2",
         queue: 28,
@@ -844,7 +573,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "E03",
-        bank: "QH",
+        bank: "VJ",
         island: "Island E",
         row: "Row 2",
         queue: 12,
@@ -856,7 +585,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "F11",
-        bank: "BL",
+        bank: "VJ",
         island: "Island F",
         row: "Row 1",
         queue: 21,
@@ -868,7 +597,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "F12",
-        bank: "BL",
+        bank: "VJ",
         island: "Island F",
         row: "Row 1",
         queue: 4,
@@ -880,9 +609,9 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
     ],
     breaches: [
-      { group: "VJ", count: 3, worstEpisode: "26 mins" },
-      { group: "QH", count: 2, worstEpisode: "16 mins" },
-      { group: "BL", count: 1, worstEpisode: "11 mins" },
+      { group: "Island D · Row 4", count: 3, worstEpisode: "26 mins" },
+      { group: "Island E · Row 2", count: 2, worstEpisode: "16 mins" },
+      { group: "Island F · Row 1", count: 1, worstEpisode: "11 mins" },
     ],
     alertTiles: [
       {
@@ -901,7 +630,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
         tone: "warn",
         title: "Peak Window Forecast",
         value: "Next 12 min",
-        detail: "Expected surge for VJ201 & QH88",
+        detail: "Expected surge for VJ201 & VJ218",
       },
     ],
   },
@@ -915,7 +644,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
     counters: [
       {
         id: "G01",
-        bank: "VN",
+        bank: "VJ",
         island: "Island G",
         row: "Row 2",
         queue: 18,
@@ -927,7 +656,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "G02",
-        bank: "VN",
+        bank: "VJ",
         island: "Island G",
         row: "Row 2",
         queue: 11,
@@ -939,7 +668,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "H04",
-        bank: "AK",
+        bank: "VJ",
         island: "Island H",
         row: "Row 3",
         queue: 32,
@@ -951,7 +680,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "H05",
-        bank: "AK",
+        bank: "VJ",
         island: "Island H",
         row: "Row 3",
         queue: 27,
@@ -963,7 +692,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "J07",
-        bank: "SQ",
+        bank: "VJ",
         island: "Island J",
         row: "Row 1",
         queue: 7,
@@ -975,7 +704,7 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
       {
         id: "J08",
-        bank: "SQ",
+        bank: "VJ",
         island: "Island J",
         row: "Row 1",
         queue: 5,
@@ -987,14 +716,14 @@ export const HALL_BY_TERMINAL: Record<TerminalId, HallTerminalSnapshot> = {
       },
     ],
     breaches: [
-      { group: "AK", count: 2, worstEpisode: "15 mins" },
+      { group: "Island H · Row 3", count: 2, worstEpisode: "15 mins" },
     ],
     alertTiles: [
       {
         tone: "warn",
         title: "At-Risk Row",
         value: "Row 3",
-        detail: "Load 85% · Watch AK counters",
+        detail: "Load 85% · Watch Island H counters",
       },
       {
         tone: "ok",
@@ -1022,7 +751,7 @@ export const DEMAND_VS_CAPACITY = [
 export const REVIEW_KPIS: ReviewKpis = {
   slaCompliance: 91.4,
   flightsAnalysed: 286,
-  airlinesCount: 37,
+  airlinesCount: 1,
   paxCheckedIn: 9420,
   breachEpisodes: 14,
   structuralBreaches: 6,
@@ -1030,21 +759,17 @@ export const REVIEW_KPIS: ReviewKpis = {
   paxImpacted: 1984,
   paxImpactedPct: 21.2,
   prevSlaCompliance: 89.1,
-  dateRangeLabel: "01 March 2025 – 07 March 2025",
+  dateRangeLabel: CHECK_IN_META.reportingPeriod,
 };
 
 export const REVIEW_SUMMARY =
   "Overall SLA compliance finished at 91.4% for the week, above the 90% target. Pressure concentrated on Monday and Friday mornings (06–12). Ad-hoc breaches were driven by baggage-system slowdowns and rail disruption feeding late arrivals into check-in. Structural under-open on Island B remains the largest controllable gap.";
 
 export const REVIEW_AIRLINE_FILTER_OPTIONS = [
-  { value: "all", label: "All Airlines" },
-  { value: "AB", label: "AB" },
-  { value: "CD", label: "CD" },
-  { value: "EF", label: "EF" },
-  { value: "GH", label: "GH" },
-  { value: "KQ", label: "KQ" },
-  { value: "LD", label: "LD" },
-  { value: "YZ", label: "YZ" },
+  { value: "all", label: "All islands" },
+  { value: "Island A", label: "Island A" },
+  { value: "Island B", label: "Island B" },
+  { value: "Island C", label: "Island C" },
 ] as const;
 
 export const REVIEW_SCOPE_FILTER_OPTIONS = [
@@ -1105,27 +830,9 @@ export const PATTERN_WAIT_MATRIX: number[][] = [
 ];
 
 export const LEAGUE_TABLE: LeagueRow[] = [
-  { group: "AB", slaPct: 97.3, flights: 24, breaches: 0, medianJoinWait: "4m12s" },
-  { group: "CD", slaPct: 95.1, flights: 19, breaches: 1, medianJoinWait: "4m48s" },
-  { group: "EF", slaPct: 93.8, flights: 21, breaches: 1, medianJoinWait: "5m12s" },
-  { group: "GH", slaPct: 91.2, flights: 22, breaches: 2, medianJoinWait: "5m44s" },
-  { group: "KQ", slaPct: 88.7, flights: 28, breaches: 4, medianJoinWait: "7m36s" },
-  {
-    group: "LD",
-    slaPct: 82.4,
-    flights: 18,
-    breaches: 3,
-    medianJoinWait: "9m12s",
-    highlight: true,
-  },
-  {
-    group: "YZ",
-    slaPct: 79.1,
-    flights: 15,
-    breaches: 4,
-    medianJoinWait: "10m28s",
-    highlight: true,
-  },
+  { group: "Island A", slaPct: 94.8, flights: 92, breaches: 2, medianJoinWait: "5m12s" },
+  { group: "Island C", slaPct: 92.1, flights: 84, breaches: 3, medianJoinWait: "5m44s" },
+  { group: "Island B", slaPct: 86.4, flights: 110, breaches: 9, medianJoinWait: "7m36s", highlight: true },
 ];
 
 export const ROOT_CAUSES: RootCause[] = [
@@ -1208,7 +915,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
       ...REVIEW_KPIS,
       slaCompliance: 90.1,
       flightsAnalysed: 214,
-      airlinesCount: 22,
+      airlinesCount: 1,
       paxCheckedIn: 6840,
       breachEpisodes: 11,
       structuralBreaches: 5,
@@ -1236,7 +943,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
       ...REVIEW_KPIS,
       slaCompliance: 91.4,
       flightsAnalysed: 148,
-      airlinesCount: 18,
+      airlinesCount: 1,
       paxCheckedIn: 5120,
       breachEpisodes: 7,
       structuralBreaches: 3,
@@ -1246,7 +953,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
     },
     pressure: PRESSURE_PROFILE,
     pattern: PATTERN_WAIT_MATRIX,
-    league: LEAGUE_TABLE.filter((r) => ["AB", "CD", "EF", "KQ"].includes(r.group)),
+    league: LEAGUE_TABLE.filter((r) => ["Island A", "Island B", "Island C"].includes(r.group)),
     rootCauses: [ROOT_CAUSES[0]!, ROOT_CAUSES[2]!],
     summaryFocus:
       "Terminal 1 held above target overall, with Friday AM still the hottest band. Island B under-open and C12–C14 bag-drop friction explain most controllable breaches.",
@@ -1256,7 +963,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
       ...REVIEW_KPIS,
       slaCompliance: 87.6,
       flightsAnalysed: 96,
-      airlinesCount: 12,
+      airlinesCount: 1,
       paxCheckedIn: 2980,
       breachEpisodes: 9,
       structuralBreaches: 4,
@@ -1268,7 +975,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
     pressure: bumpPressure(PRESSURE_PROFILE, "worse"),
     pattern: scalePattern(PATTERN_WAIT_MATRIX, 1.18),
     league: scaleLeague(
-      LEAGUE_TABLE.filter((r) => ["GH", "KQ", "LD", "YZ"].includes(r.group)),
+      LEAGUE_TABLE.filter((r) => ["Island B", "Island C"].includes(r.group)),
       0.96,
     ),
     rootCauses: [
@@ -1285,14 +992,14 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
       },
     ],
     summaryFocus:
-      "Terminal 2 finished below the 90% target. Monday and Friday mornings are consistently high-pressure; LD and YZ drive most breach episodes and passenger impact.",
+      "Terminal 2 finished below the 90% target. Monday and Friday mornings are consistently high-pressure; Island B drives most breach episodes and passenger impact.",
   },
   t3: {
     kpis: {
       ...REVIEW_KPIS,
       slaCompliance: 94.8,
       flightsAnalysed: 72,
-      airlinesCount: 9,
+      airlinesCount: 1,
       paxCheckedIn: 1840,
       breachEpisodes: 3,
       structuralBreaches: 1,
@@ -1304,7 +1011,7 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
     pressure: bumpPressure(PRESSURE_PROFILE, "better"),
     pattern: scalePattern(PATTERN_WAIT_MATRIX, 0.86),
     league: scaleLeague(
-      LEAGUE_TABLE.filter((r) => ["AB", "CD", "EF", "GH"].includes(r.group)),
+      LEAGUE_TABLE.filter((r) => ["Island A", "Island C"].includes(r.group)),
       1.02,
     ),
     rootCauses: [
@@ -1325,13 +1032,9 @@ const REVIEW_SCOPE_BASE: Record<ReviewScopeId, ReviewScopeBase> = {
 };
 
 const AIRLINE_WAIT_FACTOR: Record<string, number> = {
-  AB: 0.82,
-  CD: 0.88,
-  EF: 0.92,
-  GH: 0.98,
-  KQ: 1.12,
-  LD: 1.22,
-  YZ: 1.3,
+  "Island A": 0.92,
+  "Island C": 0.98,
+  "Island B": 1.14,
 };
 
 function buildReviewSummary(
@@ -1349,10 +1052,10 @@ function buildReviewSummary(
   if (airline !== "all") {
     const row = league[0];
     const wait = row?.medianJoinWait ?? "n/a";
-    return `Airline ${airline} finished at ${kpis.slaCompliance}% SLA (${vsTarget}) under ${scopeLabel}. ${kpis.flightsAnalysed} flights analysed · ${kpis.breachEpisodes} breach episodes · median join wait ${wait}. ${kpis.paxImpacted.toLocaleString()} pax impacted (${kpis.paxImpactedPct}%). ${focus}`;
+    return `${CHECK_IN_META.carrier} ${airline} finished at ${kpis.slaCompliance}% SLA (${vsTarget}) under ${scopeLabel} for ${kpis.dateRangeLabel}. ${kpis.flightsAnalysed} flights analysed · ${kpis.breachEpisodes} breach episodes · median est. join wait ${wait}. ${kpis.paxImpacted.toLocaleString()} pax impacted (${kpis.paxImpactedPct}%). ${focus}`;
   }
 
-  return `Overall SLA compliance finished at ${kpis.slaCompliance}% for the week, ${vsTarget} (${scopeLabel}). ${kpis.flightsAnalysed} flights across ${kpis.airlinesCount} airlines · ${kpis.paxCheckedIn.toLocaleString()} pax checked in · ${kpis.breachEpisodes} breach episodes (${kpis.structuralBreaches} structural · ${kpis.adHocBreaches} ad-hoc) · ${kpis.paxImpacted.toLocaleString()} pax impacted (${kpis.paxImpactedPct}%). ${focus}`;
+  return `Overall SLA compliance finished at ${kpis.slaCompliance}% for ${kpis.dateRangeLabel}, ${vsTarget} (${scopeLabel}). ${kpis.flightsAnalysed} Vietjet flights · ${kpis.paxCheckedIn.toLocaleString()} pax checked in · ${kpis.breachEpisodes} breach episodes (${kpis.structuralBreaches} structural · ${kpis.adHocBreaches} ad-hoc) · ${kpis.paxImpacted.toLocaleString()} pax impacted (${kpis.paxImpactedPct}%). ${focus}`;
 }
 
 function kpisFromLeagueRow(base: ReviewKpis, row: LeagueRow): ReviewKpis {
@@ -1420,10 +1123,9 @@ export function getReviewSnapshot(airline: string, scope: string): ReviewSnapsho
     airline === "all"
       ? base.rootCauses
       : base.rootCauses.filter((r, i) => {
-          if (airline === "YZ" || airline === "LD") return true;
-          if (airline === "KQ") return i !== 2;
+          if (airline === "Island B") return true;
           return i === 0 || r.category === "ad-hoc";
-        }).slice(0, Math.max(1, airline === "AB" ? 1 : 2));
+        }).slice(0, airline === "Island A" ? 1 : 2);
 
   return {
     kpis,
@@ -1445,45 +1147,41 @@ export function getReviewSnapshot(airline: string, scope: string): ReviewSnapsho
 }
 
 export const WEEKLY_AIRLINE_FILTER_OPTIONS = [
-  { value: "all", label: "All Airlines" },
-  { value: "KQ", label: "KQ - Kenya Airways" },
-  { value: "VJ", label: "VJ - Vietjet Air" },
-  { value: "AB", label: "AB" },
-  { value: "CD", label: "CD" },
+  { value: "VJ", label: "Vietjet Air (VJ)" },
 ] as const;
 
 /** Top table — extra episode detail (FootfallCam weekly report). */
 export const WEEKLY_EPISODES: WeeklyEpisodeRow[] = [
   {
     id: "e1",
-    airline: "KQ",
+    airline: "VJ",
     window: "07:20–08:05",
-    event: "KQ123 / KQ127 Morning Wave",
+    event: "VJ123 / VJ127 Morning Wave",
     peakWait: "22.4 / 17.8 min",
     paxAffected: 182,
     impact: "Early under-open vs demand curve; both scenarios cut breach impact 38–49%.",
   },
   {
     id: "e2",
-    airline: "KQ",
+    airline: "VJ",
     window: "12:25–13:00",
-    event: "KQ Midday Bank",
+    event: "VJ Midday Bank",
     peakWait: "13.4 / 8.9 min",
     paxAffected: 118,
     impact: "Processing variance due to staff rotation during lunch handover.",
   },
   {
     id: "e3",
-    airline: "KQ",
+    airline: "VJ",
     window: "19:10–19:45",
-    event: "KQ341 Late Evening",
+    event: "VJ341 Late Evening",
     peakWait: "18.6 / 14.2 min",
     paxAffected: 146,
     impact: "Staffing variance from late rotation reduced service rate below recovery.",
   },
   {
     id: "e4",
-    airline: "KQ",
+    airline: "VJ",
     window: "16:05–16:50",
     event: "Weekly Friday Surge",
     peakWait: "19.8 / 13.2 min",
@@ -1492,12 +1190,12 @@ export const WEEKLY_EPISODES: WeeklyEpisodeRow[] = [
   },
   {
     id: "e5",
-    airline: "KQ",
+    airline: "VJ",
     window: "Sat 11:15–11:45 (recurring)",
     event: "Weekend Family Wave",
     peakWait: "17.6 / 12.4 min",
     paxAffected: 149,
-    impact: "Flight banks for these carriers overlap weekly into shared islands.",
+    impact: "Vietjet Friday and weekend banks overlap into shared islands.",
   },
   {
     id: "e6",
@@ -1506,7 +1204,7 @@ export const WEEKLY_EPISODES: WeeklyEpisodeRow[] = [
     event: "VJ123 / VJ127 Morning Wave",
     peakWait: "15.8 / 11.2 min",
     paxAffected: 420,
-    impact: "Either open +1 counter at 06:50 or guarantee early open of C15 by 07:05.",
+    impact: "Either open +1 counter at 06:50 or guarantee early open of C12 by 07:05.",
   },
   {
     id: "e7",
@@ -1517,23 +1215,14 @@ export const WEEKLY_EPISODES: WeeklyEpisodeRow[] = [
     paxAffected: 502,
     impact: "Align roster open +12 min earlier Fridays; mark as structural fix.",
   },
-  {
-    id: "e8",
-    airline: "AB",
-    window: "08:10–08:40",
-    event: "AB Early Bank",
-    peakWait: "11.2 / 7.8 min",
-    paxAffected: 96,
-    impact: "Minor peak — monitor only; SLA recovered within window.",
-  },
 ];
 
-/** Actionable recommendation cards — FootfallCam reference (KQ) + VJ/AB variants. */
+/** Vietjet weekly recommendation cards — same reporting week as Management Review. */
 export const WEEKLY_BANKS: FlightBankRec[] = [
   {
     id: "b1",
-    airline: "KQ",
-    title: "KQ123 / KQ127 Morning Wave",
+    airline: "VJ",
+    title: "VJ123 / VJ127 Morning Wave",
     window: "07:20–08:05",
     observedPeakMin: 22.4,
     observedPeakSecondary: 17.8,
@@ -1547,8 +1236,8 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b2",
-    airline: "KQ",
-    title: "KQ341 Late Evening",
+    airline: "VJ",
+    title: "VJ341 Late Evening",
     window: "19:10–19:45",
     observedPeakMin: 18.6,
     observedPeakSecondary: 14.2,
@@ -1562,7 +1251,7 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b3",
-    airline: "KQ",
+    airline: "VJ",
     title: "Weekly Friday Surge",
     window: "16:05–16:50",
     observedPeakMin: 19.8,
@@ -1577,7 +1266,7 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b4",
-    airline: "KQ",
+    airline: "VJ",
     title: "Weekend Family Wave",
     window: "Sat 11:15–11:45",
     observedPeakMin: 17.6,
@@ -1592,8 +1281,8 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b5",
-    airline: "KQ",
-    title: "KQ Midday Bank",
+    airline: "VJ",
+    title: "VJ Midday Bank",
     window: "12:25–13:00",
     observedPeakMin: 13.4,
     observedPeakSecondary: 8.9,
@@ -1607,8 +1296,8 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b6",
-    airline: "KQ",
-    title: "KQ Early Shoulder",
+    airline: "VJ",
+    title: "VJ Early Shoulder",
     window: "06:40–07:10",
     observedPeakMin: 14.2,
     observedPeakSecondary: 10.6,
@@ -1622,8 +1311,8 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b7",
-    airline: "KQ",
-    title: "KQ Night Close",
+    airline: "VJ",
+    title: "VJ Night Close",
     window: "21:20–21:55",
     observedPeakMin: 15.1,
     observedPeakSecondary: 11.4,
@@ -1637,8 +1326,8 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
   },
   {
     id: "b8",
-    airline: "KQ",
-    title: "KQ Transfer Overlap",
+    airline: "VJ",
+    title: "VJ Transfer Overlap",
     window: "09:05–09:40",
     observedPeakMin: 16.8,
     observedPeakSecondary: 12.9,
@@ -1662,7 +1351,7 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
     scenarioAPaxMin: 980,
     scenarioBPaxMin: 860,
     recommendation:
-      "Either open +1 counter at 06:50 or guarantee early open of C15 by 07:05.",
+      "Either open +1 counter at 06:50 or guarantee early open of C12 by 07:05.",
     adopted: false,
   },
   {
@@ -1693,20 +1382,6 @@ export const WEEKLY_BANKS: FlightBankRec[] = [
     recommendation: "Align roster open +12 min earlier Fridays; mark as structural fix.",
     adopted: false,
   },
-  {
-    id: "b12",
-    airline: "AB",
-    title: "AB Early Bank",
-    window: "08:10–08:40",
-    observedPeakMin: 11.2,
-    observedPeakSecondary: 7.8,
-    affectedPax: 96,
-    observedPaxMin: 380,
-    scenarioAPaxMin: 240,
-    scenarioBPaxMin: 210,
-    recommendation: "Minor peak — monitor only; SLA recovered within window.",
-    adopted: true,
-  },
 ];
 
 export function getWeeklyView(airline: string, _dateRange: string) {
@@ -1721,85 +1396,6 @@ export function getWeeklyView(airline: string, _dateRange: string) {
   return { episodes, banks };
 }
 
-type SupervisorAlertSeed = Omit<SupervisorAlert, "createdAt"> & { ageSec: number };
-
-const SUPERVISOR_ALERT_SEEDS: SupervisorAlertSeed[] = [
-  {
-    id: "alt-c12-pred",
-    severity: "critical",
-    zone: "B",
-    counter: "C12",
-    type: "predicted",
-    etaMin: 7,
-    queueLen: 62,
-    waiting5m: 41,
-    waiting10m: 10,
-    recommendation: "Open +1 counter",
-    status: "active",
-    ageSec: 48,
-  },
-  {
-    id: "alt-c12-10m",
-    severity: "critical",
-    zone: "B",
-    counter: "C12",
-    type: "10m",
-    etaMin: null,
-    waiting10m: 10,
-    recommendation: "Open +1 counter",
-    status: "active",
-    ageSec: 96,
-  },
-  {
-    id: "alt-c12-5m",
-    severity: "warning",
-    zone: "B",
-    counter: "C12",
-    type: "5m",
-    etaMin: null,
-    waiting5m: 41,
-    recommendation: "Pull 1 agent from C18",
-    status: "active",
-    ageSec: 132,
-  },
-  {
-    id: "alt-c13-rec",
-    severity: "recovering",
-    zone: "B",
-    counter: "C13",
-    type: "5m",
-    etaMin: null,
-    waiting5m: 3,
-    recommendation: "Hold current staffing",
-    status: "active",
-    ageSec: 210,
-  },
-  {
-    id: "alt-c14-pred",
-    severity: "warning",
-    zone: "B",
-    counter: "C14",
-    type: "predicted",
-    etaMin: 11,
-    queueLen: 22,
-    recommendation: "Pre-open C15 for the next bank",
-    status: "active",
-    ageSec: 180,
-  },
-  {
-    id: "alt-c07-5m",
-    severity: "warning",
-    zone: "A",
-    counter: "C07",
-    type: "5m",
-    etaMin: null,
-    waiting5m: 6,
-    recommendation: "Monitor — flex agent on standby",
-    status: "active",
-    ageSec: 240,
-  },
-];
-
 export const SUPERVISOR_ALERT_ZONES = ["A", "B", "C"] as const;
 export const SUPERVISOR_ALERT_TYPES: { id: AlertType; label: string }[] = [
   { id: "predicted", label: "Predicted breach" },
@@ -1807,13 +1403,72 @@ export const SUPERVISOR_ALERT_TYPES: { id: AlertType; label: string }[] = [
   { id: "10m", label: "> 10 min" },
 ];
 
+/** Alerts follow the same 5/10 min + predicted-breach rules as Suggested Actions. */
 export function getSupervisorAlerts(): SupervisorAlert[] {
   const now = Date.now();
-  return SUPERVISOR_ALERT_SEEDS.map((seed) => {
-    const { ageSec, ...alert } = seed;
-    return {
-      ...alert,
-      createdAt: new Date(now - ageSec * 1000).toISOString(),
-    };
+  const counters = LIVE_COUNTERS.filter((counter) => counter.airline === "VJ");
+  const byId = new Map(counters.map((counter) => [counter.id, counter]));
+  const alerts: SupervisorAlert[] = [];
+
+  SUGGESTED_ACTIONS.filter((action) => action.airline === "VJ").forEach((action, index) => {
+    const counter = action.counterId ? byId.get(action.counterId) : undefined;
+    const predicted = action.severity === "critical";
+    alerts.push({
+      id: `act-${action.id}`,
+      severity:
+        action.severity === "critical"
+          ? "critical"
+          : action.severity === "warn"
+            ? "warning"
+            : "recovering",
+      zone: counter?.zone ?? "B",
+      counter: action.counterId ?? "C12",
+      type: predicted ? "predicted" : (counter?.waiting10m ?? 0) > 0 ? "10m" : "5m",
+      etaMin: predicted ? (counter?.breachInMin ?? 7) : null,
+      queueLen: counter?.queueLen,
+      waiting5m: counter?.waiting5m,
+      waiting10m: counter?.waiting10m,
+      recommendation: predicted ? "Open +1 counter" : action.text.replace(/\.$/, ""),
+      createdAt: new Date(now - (48 + index * 36) * 1000).toISOString(),
+      status: "active",
+    });
   });
+
+  counters.forEach((counter, index) => {
+    if (counter.waiting10m > 0 && !alerts.some((alert) => alert.counter === counter.id && alert.type === "10m")) {
+      alerts.push({
+        id: `th-10-${counter.id}`,
+        severity: "critical",
+        zone: counter.zone,
+        counter: counter.id,
+        type: "10m",
+        etaMin: null,
+        queueLen: counter.queueLen,
+        waiting5m: counter.waiting5m,
+        waiting10m: counter.waiting10m,
+        recommendation: "Open +1 counter",
+        createdAt: new Date(now - (90 + index * 24) * 1000).toISOString(),
+        status: "active",
+      });
+    }
+    if (counter.waiting5m > 0 && !alerts.some((alert) => alert.counter === counter.id && alert.type === "5m")) {
+      alerts.push({
+        id: `th-5-${counter.id}`,
+        severity: counter.waiting10m > 0 ? "warning" : "warning",
+        zone: counter.zone,
+        counter: counter.id,
+        type: "5m",
+        etaMin: null,
+        queueLen: counter.queueLen,
+        waiting5m: counter.waiting5m,
+        waiting10m: counter.waiting10m,
+        recommendation: "Pull 1 agent from underutilised desks",
+        createdAt: new Date(now - (120 + index * 24) * 1000).toISOString(),
+        status: "active",
+      });
+    }
+  });
+
+  return alerts;
 }
+

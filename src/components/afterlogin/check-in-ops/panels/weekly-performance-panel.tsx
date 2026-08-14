@@ -1,6 +1,6 @@
 "use client";
 
-import { format, isValid, parseISO, subDays } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,7 +14,6 @@ import {
 import { DashboardSurfaceCard } from "@/components/common/dashboard-surface-card";
 import { EChartsProgressBar } from "@/components/common/echarts-progress-bar";
 import FormDateFilter from "@/components/common/form-date-filter";
-import { FormSelect } from "@/components/common/form-select";
 import { FridayButton } from "@/components/common/friday-button";
 import {
   Popover,
@@ -22,8 +21,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  CHECK_IN_META,
   getWeeklyView,
-  WEEKLY_AIRLINE_FILTER_OPTIONS,
   WEEKLY_BANKS,
 } from "@/data/afterlogin/check-in-ops/static-data";
 import type {
@@ -45,14 +44,14 @@ const DATE_RANGE_CONFIG = {
   placeholder: "Select start and end dates",
 };
 
-/** Rolling last week: today − 7 days → today. */
-function getLastWeekDateRange(now = new Date()): DateRangeFilterValue {
+/** Shared reporting week from CHECK_IN_META. */
+function getLastWeekDateRange(): DateRangeFilterValue {
   return {
     type: "date",
     mode: "range",
     date: null,
-    from: format(subDays(now, 7), "yyyy-MM-dd"),
-    to: format(now, "yyyy-MM-dd"),
+    from: CHECK_IN_META.reportingFrom,
+    to: CHECK_IN_META.reportingTo,
   };
 }
 
@@ -293,7 +292,7 @@ function downloadWeeklyCsv(
 ) {
   const lines = [
     "Airline Weekly Check-In Performance Report",
-    `Airline,${airlineLabel}`,
+    `Carrier,${airlineLabel}`,
     `Date range,${dateLabel}`,
     "",
     "Window,Event,Peak wait,Pax affected,Impact / note",
@@ -333,7 +332,7 @@ function downloadWeeklyCsv(
 }
 
 export function WeeklyPerformancePanel() {
-  const [airlineFilter, setAirlineFilter] = useState("KQ");
+  const [airlineFilter] = useState("VJ");
   const [dateRange, setDateRange] = useState<DateRangeFilterValue>(() =>
     getLastWeekDateRange(),
   );
@@ -357,9 +356,7 @@ export function WeeklyPerformancePanel() {
     [base.banks, adoptedMap],
   );
 
-  const airlineLabel =
-    WEEKLY_AIRLINE_FILTER_OPTIONS.find((o) => o.value === airlineFilter)?.label ??
-    "All Airlines";
+  const airlineLabel = CHECK_IN_META.carrier;
   const dateLabel = formatDateRangeLabel(dateRange);
 
   const episodesTable = useDataTableControls({
@@ -395,27 +392,14 @@ export function WeeklyPerformancePanel() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-[16px] font-semibold text-white">
-            Airline Weekly Check-In Performance Report
+            Vietjet Weekly Check-In Performance
           </h3>
           <p className="mt-0.5 text-[12px] text-white/40">
             {dateLabel} · Observed vs Scenario A (+1 counter) vs Scenario B (early opening)
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <FormSelect
-            options={[...WEEKLY_AIRLINE_FILTER_OPTIONS]}
-            value={airlineFilter}
-            onValueChange={(value) => {
-              if (value) setAirlineFilter(value);
-            }}
-            searchable={false}
-            clearable={false}
-            surface="transparent"
-            variant="square"
-            inputSize="sm"
-            containerClassName="w-[12.5rem] shrink-0 self-center"
-            aria-label="Airline filter"
-          />
+          <span className="self-center text-[12px] text-white/45">{CHECK_IN_META.carrier}</span>
           <WeeklyDateRangeFilter value={dateRange} onChange={setDateRange} />
           <FridayButton
             variant="outline"

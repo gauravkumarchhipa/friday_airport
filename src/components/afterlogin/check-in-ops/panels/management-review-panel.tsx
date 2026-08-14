@@ -90,8 +90,8 @@ function slaTone(pct: number): string {
 }
 
 const LEAGUE_COLUMNS = defineColumns<LeagueRow>(
-  textCol("Airline", (row) => row.group, {
-    className: "min-w-[4rem] font-medium text-white",
+  textCol("Island", (row) => row.group, {
+    className: "min-w-[6rem] font-medium text-white",
     textClassName: "font-medium text-white",
     headerAlign: "left",
     align: "left",
@@ -127,7 +127,7 @@ const LEAGUE_COLUMNS = defineColumns<LeagueRow>(
     sortable: true,
     filter: { type: "number", placeholder: "Breaches" },
   }),
-  mutedCol("Median join wait", (row) => row.medianJoinWait, {
+  mutedCol("Median est. join wait", (row) => row.medianJoinWait, {
     headerAlign: "left",
     align: "left",
     className: "min-w-[7rem]",
@@ -373,7 +373,7 @@ function PatternWaitHeatmap({ matrix }: { matrix: number[][] }) {
                     <GlassTooltipWrap
                       key={`${day}-${hour}`}
                       side="top"
-                      label={`${DAY_FULL[day]} · ${hour} — Median join wait ${mins.toFixed(1)} mins (${waitBandLabel(mins)})`}
+                      label={`${DAY_FULL[day]} · ${hour} — Median est. join wait ${mins.toFixed(1)} mins (${waitBandLabel(mins)})`}
                     >
                       <button
                         type="button"
@@ -415,7 +415,7 @@ export function ManagementReviewPanel() {
     mode: "client",
     getSortValue: (row, columnId) => {
       switch (columnId) {
-        case "airline":
+        case "island":
           return row.group;
         case "sla-%":
           return row.slaPct;
@@ -423,7 +423,7 @@ export function ManagementReviewPanel() {
           return row.flights;
         case "breach-episodes":
           return row.breaches;
-        case "median-join-wait":
+        case "median-est-join-wait":
           return medianWaitSeconds(row.medianJoinWait);
         default:
           return "";
@@ -433,7 +433,7 @@ export function ManagementReviewPanel() {
 
   const airlineLabel =
     REVIEW_AIRLINE_FILTER_OPTIONS.find((o) => o.value === airlineFilter)?.label ??
-    "All Airlines";
+    "All islands";
 
   const scopeLabel =
     REVIEW_SCOPE_FILTER_OPTIONS.find((o) => o.value === scopeFilter)?.label ??
@@ -482,7 +482,7 @@ export function ManagementReviewPanel() {
             variant="square"
             inputSize="sm"
             containerClassName="w-[9.5rem] shrink-0 self-center"
-            aria-label="Airline filter"
+            aria-label="Island filter"
           />
           <FormSelect
             options={[...REVIEW_SCOPE_FILTER_OPTIONS]}
@@ -529,7 +529,7 @@ export function ManagementReviewPanel() {
           label="Total flights analysed"
           value={String(view.kpis.flightsAnalysed)}
           icon={Plane}
-          status={`Across ${view.kpis.airlinesCount} airline${view.kpis.airlinesCount === 1 ? "" : "s"} · ${view.kpis.paxCheckedIn.toLocaleString()} pax checked in`}
+          status={`Vietjet Air · ${view.kpis.paxCheckedIn.toLocaleString()} pax checked in`}
           statusTone="ok"
         />
         <SummaryMetricCard
@@ -566,11 +566,11 @@ export function ManagementReviewPanel() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] xl:items-stretch">
-        <OpsCard title="Pattern view — median join wait (mins)" fill className="h-full min-h-0">
+        <OpsCard title="Pattern view — median est. join wait (mins)" fill className="h-full min-h-0">
           <PatternWaitHeatmap matrix={view.pattern} />
         </OpsCard>
 
-        <OpsCard title="Airline SLA league" flush fill className="h-full min-h-0">
+        <OpsCard title="Island SLA league" flush fill className="h-full min-h-0">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <DataTable
               columns={LEAGUE_COLUMNS}
@@ -588,8 +588,8 @@ export function ManagementReviewPanel() {
               rowClassName={(row) =>
                 row.highlight ? "bg-red-500/[0.08]" : undefined
               }
-              emptyMessage="No airlines match your filters"
-              emptyDescription="Try changing filters or sorting, or clear them to show all airlines."
+              emptyMessage="No islands match your filters"
+              emptyDescription="Try changing filters or sorting, or clear them to show all islands."
               emptyActionLabel="Clear filters"
               onEmptyAction={leagueTable.clearAllControls}
               pageKey={`${airlineFilter}-${scopeFilter}`}
