@@ -10,6 +10,7 @@ import {
   type SidebarNavItem,
 } from "@/components/afterlogin/layout/dashboard-sidebar";
 import { HeaderUserProfile } from "@/components/common/header-user-profile";
+import { PageMetaBadges } from "@/components/afterlogin/check-in-ops/check-in-ops-ui";
 import { getIsBelowLg, useIsBelowLg } from "@/hooks/common/use-is-below-lg";
 import { getIsBelowXl, useIsBelowXl } from "@/hooks/common/use-is-below-xl";
 
@@ -72,7 +73,7 @@ function DashboardShellComponent({
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-[#0a1218]">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/[0.08] px-3 sm:h-16 sm:gap-3 sm:px-6 md:px-8">
+        <header className="flex min-h-14 shrink-0 flex-wrap items-center justify-between gap-2 border-b border-white/[0.08] px-3 py-2 sm:min-h-16 sm:gap-3 sm:px-6 md:px-8">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <button
               type="button"
@@ -88,7 +89,10 @@ function DashboardShellComponent({
               {activeItem?.label ?? "Check-In Ops"}
             </h1>
           </div>
-          <HeaderUserProfile name="Ops Admin" initials="OA" />
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+            <PageMetaBadges />
+            <HeaderUserProfile name="Ops Admin" initials="OA" />
+          </div>
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto bg-[#0a1218] p-4 sm:p-6 md:p-8">

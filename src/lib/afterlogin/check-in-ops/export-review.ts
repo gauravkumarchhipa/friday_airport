@@ -30,13 +30,13 @@ export function buildReviewCsv(view: ReviewSnapshot, meta: ReviewExportMeta): st
   const lines: string[] = [
     "Section,Metric,Value",
     csvEscape("Filters"),
-    ["Filters", "Airline", meta.airlineLabel].map(csvEscape).join(","),
+    ["Filters", "Island", meta.airlineLabel].map(csvEscape).join(","),
     ["Filters", "Scope", meta.scopeLabel].map(csvEscape).join(","),
     ["Filters", "Date range", view.kpis.dateRangeLabel].map(csvEscape).join(","),
     "",
     ["KPI", "Overall SLA compliance %", view.kpis.slaCompliance].map(csvEscape).join(","),
     ["KPI", "Flights analysed", view.kpis.flightsAnalysed].map(csvEscape).join(","),
-    ["KPI", "Airlines count", view.kpis.airlinesCount].map(csvEscape).join(","),
+    ["KPI", "Carrier", "Vietjet Air"].map(csvEscape).join(","),
     ["KPI", "Pax checked in", view.kpis.paxCheckedIn].map(csvEscape).join(","),
     ["KPI", "Breach episodes", view.kpis.breachEpisodes].map(csvEscape).join(","),
     ["KPI", "Structural breaches", view.kpis.structuralBreaches].map(csvEscape).join(","),
@@ -46,7 +46,7 @@ export function buildReviewCsv(view: ReviewSnapshot, meta: ReviewExportMeta): st
     "",
     ["Summary", "Narrative", view.summary].map(csvEscape).join(","),
     "",
-    "Airline,SLA %,Flights,Breach episodes,Median join wait",
+    "Island,SLA %,Flights,Breach episodes,Median est. join wait",
     ...view.league.map((row) =>
       [row.group, row.slaPct, row.flights, row.breaches, row.medianJoinWait]
         .map(csvEscape)
@@ -72,12 +72,12 @@ export function buildReviewPdf(view: ReviewSnapshot, meta: ReviewExportMeta): Bl
     "Airport Management Review",
     view.kpis.dateRangeLabel,
     `SLA target ${meta.slaTargetPct}% / ${meta.slaWindowMin} min`,
-    `Airline: ${meta.airlineLabel}`,
+    `Island: ${meta.airlineLabel}`,
     `Scope: ${meta.scopeLabel}`,
     "",
     `Overall SLA: ${view.kpis.slaCompliance}%`,
     `Flights analysed: ${view.kpis.flightsAnalysed}`,
-    `Airlines: ${view.kpis.airlinesCount}`,
+    `Carrier: Vietjet Air`,
     `Pax checked in: ${view.kpis.paxCheckedIn.toLocaleString()}`,
     `Breach episodes: ${view.kpis.breachEpisodes} (${view.kpis.structuralBreaches} structural / ${view.kpis.adHocBreaches} ad-hoc)`,
     `Pax impacted: ${view.kpis.paxImpacted.toLocaleString()} (${view.kpis.paxImpactedPct}%)`,
@@ -85,8 +85,8 @@ export function buildReviewPdf(view: ReviewSnapshot, meta: ReviewExportMeta): Bl
     "Summary",
     ...wrapText(view.summary, 88),
     "",
-    "Airline SLA league",
-    "Airline | SLA % | Flights | Breaches | Median wait",
+    "Island SLA league",
+    "Island | SLA % | Flights | Breaches | Median est. wait",
     ...view.league.map(
       (row) =>
         `${row.group} | ${row.slaPct}% | ${row.flights} | ${row.breaches} | ${row.medianJoinWait}`,

@@ -3,7 +3,7 @@
 import { AlertTriangle, BellRing, Clock3, Settings2, UserCheck } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-import { OpsCard, PrivacyBadge } from "@/components/afterlogin/check-in-ops/check-in-ops-ui";
+import { OpsCard } from "@/components/afterlogin/check-in-ops/check-in-ops-ui";
 import { SummaryMetricCard } from "@/components/afterlogin/overview/clusters/summary-metric-card";
 import { FridayButton } from "@/components/common/friday-button";
 import {
@@ -29,13 +29,14 @@ function zoneLabel(zone: string) {
 }
 
 function alertTitle(alert: SupervisorAlert) {
-  return `${zoneLabel(alert.zone)} — Counter ${alert.counter}`;
+  return `Counter ${alert.counter}`;
 }
 
 function alertBody(alert: SupervisorAlert, etaLabel: string | null) {
   if (alert.type === "predicted") {
-    return etaLabel
-      ? `Breach in ${etaLabel} · ${alert.recommendation.toLowerCase()}`
+    const eta = etaLabel ?? (alert.etaMin != null ? `${alert.etaMin} min` : null);
+    return eta
+      ? `breach predicted in ${eta} · ${alert.recommendation.toLowerCase()}`
       : alert.recommendation;
   }
   if (alert.type === "10m") {
@@ -230,7 +231,9 @@ export function MobileAlertsPanel() {
             </span>
             {latencySec}s latency
           </span>
-          <PrivacyBadge />
+          <span className="inline-flex items-center rounded-full border border-white/12 bg-white/[0.04] px-2.5 py-1 text-[10px] font-medium tracking-wide text-white/55 uppercase">
+            PWA push · SMS / Teams fallback
+          </span>
         </div>
       </div>
 
@@ -296,8 +299,8 @@ export function MobileAlertsPanel() {
                 <BellRing className="mt-0.5 h-5 w-5 shrink-0 text-red-300" strokeWidth={1.75} />
               </div>
               <p className="mt-2 text-[14px] text-white/80 sm:text-[15px]">
-                {featured.type === "predicted" && featuredEta
-                  ? `Breach in ${featuredEta} · queue ${featured.queueLen ?? 0} pax`
+                {featured.type === "predicted"
+                  ? `${alertTitle(featured)} — ${alertBody(featured, featuredEta)}`
                   : alertBody(featured, featuredEta)}
               </p>
               <p className="mt-3 border border-red-400/30 bg-red-500/10 px-3 py-2.5 text-[13px] font-medium text-red-100">
