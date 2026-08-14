@@ -1,0 +1,168 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@source "../";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0.14 0 0);
+  --card-foreground: oklch(1 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --primary: oklch(0.62 0.22 255);
+  --primary-foreground: oklch(1 0 0);
+  --accent: oklch(0.62 0.22 255);
+  --accent-foreground: oklch(1 0 0);
+  --border: oklch(0.22 0 0);
+  --ring: oklch(0.62 0.22 255);
+  --color-input-border: rgba(255, 255, 255, 0.2);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    min-height: 100%;
+    background: #0a1218;
+    color: #fff;
+    font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+}
+
+@keyframes data-table-page-row-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.data-table-page-row-enter {
+  animation: data-table-page-row-enter 0.28s ease-out both;
+}
+
+.friday-date-filter-calendar [data-selected-single="true"],
+.friday-date-filter-calendar [data-range-start="true"],
+.friday-date-filter-calendar [data-range-end="true"] {
+  background: linear-gradient(135deg, #11564f 0%, #179b8c 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(23, 155, 140, 0.28);
+}
+
+.friday-date-filter-calendar [data-range-middle="true"] {
+  background: rgba(23, 155, 140, 0.18) !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+}
+
+.friday-date-filter-calendar button[data-day]:hover:not([data-selected-single="true"]):not([data-range-start="true"]):not([data-range-end="true"]):not([data-range-middle="true"]) {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #fff !important;
+}
+
+.friday-date-filter-calendar .rdp-dropdown option {
+  background: #0c1b1e;
+  color: #fff;
+}
+
+.friday-slim-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}
+
+.friday-slim-scrollbar::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 3px;
+  height: 0;
+  background-color: transparent;
+}
+
+.friday-slim-scrollbar.scroll-hover:hover::-webkit-scrollbar,
+.scroll-hover:hover::-webkit-scrollbar {
+  height: 3px;
+}
+
+.friday-slim-scrollbar::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+}
+
+@keyframes live-queue-pax-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(1.4px, -6px); }
+}
+
+@keyframes live-passerby-walk {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(7px, -3px); }
+  50% { transform: translate(12px, 4px); }
+  75% { transform: translate(5px, 8px); }
+}
+
+@keyframes live-status-ping {
+  0% { transform: scale(1); opacity: 0.7; }
+  80%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+.live-queue-pax {
+  animation: live-queue-pax-drift 2.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.live-passerby {
+  animation: live-passerby-walk 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.live-status-ping {
+  animation: live-status-ping 1.6s ease-out infinite;
+}
+
+@media (max-width: 639px) {
+  [data-radix-popper-content-wrapper]:has(.data-table-filter-popover) {
+    position: fixed !important;
+    inset: 0 !important;
+    display: flex !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: 0.5rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .data-table-page-row-enter,
+  .live-queue-pax,
+  .live-passerby,
+  .live-status-ping {
+    animation: none;
+  }
+}
