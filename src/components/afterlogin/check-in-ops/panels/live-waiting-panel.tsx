@@ -1,7 +1,8 @@
 "use client";
 
 import { AlertTriangle, Plane, Timer, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { SummaryMetricCard } from "@/components/afterlogin/overview/clusters/summary-metric-card";
 import { DataTable } from "@/components/common/data-table";
@@ -121,14 +122,15 @@ const FLIGHT_COLUMNS = defineColumns<FlightUrgencyRow>(
 
 const FLIGHT_FILTER_CONFIGS = buildFilterConfigsFromColumns(FLIGHT_COLUMNS);
 
-export function LiveWaitingPanel({
-  onOpenCounterAction,
-  focusCounterId,
-}: {
-  onOpenCounterAction?: (counterId: string) => void;
-  focusCounterId?: string | null;
-}) {
+export function LiveWaitingPanel() {
+  const searchParams = useSearchParams();
+  const counterFromUrl = searchParams.get("counter");
   const [airlineFilter, setAirlineFilter] = useState("VJ");
+  const [focusCounterId, setFocusCounterId] = useState<string | null>(counterFromUrl);
+
+  useEffect(() => {
+    if (counterFromUrl) setFocusCounterId(counterFromUrl);
+  }, [counterFromUrl]);
   const view = useMemo(() => getLiveView(airlineFilter), [airlineFilter]);
 
   const flightRows = useMemo<FlightUrgencyRow[]>(
@@ -278,7 +280,7 @@ export function LiveWaitingPanel({
         >
           <LiveQueueMap
             counters={view.counters}
-            onSelectCounter={onOpenCounterAction}
+            onSelectCounter={setFocusCounterId}
             focusCounterId={focusCounterId}
             className="h-full"
           />
@@ -378,7 +380,7 @@ export function LiveWaitingPanel({
                   size="sm"
                   className="mt-3 w-full"
                   onClick={() =>
-                    onOpenCounterAction?.(primaryAction.counterId ?? "C12")
+                    setFocusCounterId(primaryAction.counterId ?? "C12")
                   }
                 >
                   {primaryAction.counterId

@@ -95,7 +95,7 @@ export function OpsCard({
       <div
         className={cn(
           title && "mt-3",
-          fill && "min-h-0 flex-1",
+          fill && "flex min-h-0 flex-1 flex-col",
           flush && title && "-mx-4 sm:-mx-5",
           flush && fill && "flex min-h-0 flex-col",
         )}

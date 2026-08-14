@@ -4,9 +4,11 @@ import {
   ChevronsLeft,
   ChevronsRight,
   LogOut,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import { memo, useCallback, useRef } from "react";
+import Link from "next/link";
+import { memo, useRef } from "react";
 
 import { FridayLogo } from "@/components/common/friday-logo";
 import {
@@ -22,33 +24,30 @@ const ICON_CLASS = "h-5 w-5 shrink-0";
 export type SidebarNavItem = {
   id: string;
   label: string;
+  href: string;
   icon?: LucideIcon;
 };
 
-type SidebarNavButtonProps = {
+type SidebarNavLinkProps = {
   item: SidebarNavItem;
   active: boolean;
   collapsed: boolean;
-  onSelect: (id: string) => void;
 };
 
-const SidebarNavButton = memo(function SidebarNavButton({
+const SidebarNavLink = memo(function SidebarNavLink({
   item,
   active,
   collapsed,
-  onSelect,
-}: SidebarNavButtonProps) {
+}: SidebarNavLinkProps) {
   const labelRef = useRef<HTMLSpanElement>(null);
   // Collapsed → always tooltip; expanded → only when label shows "…"
   const shouldOpen = useTruncationGate(labelRef, collapsed);
   const Icon = item.icon;
-  const handleClick = useCallback(() => onSelect(item.id), [onSelect, item.id]);
 
   return (
     <GlassTooltipWrap label={item.label} enabled shouldOpen={shouldOpen}>
-      <button
-        type="button"
-        onClick={handleClick}
+      <Link
+        href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
           navLink({ active, layout: "row" }),
@@ -62,7 +61,7 @@ const SidebarNavButton = memo(function SidebarNavButton({
             {item.label}
           </span>
         )}
-      </button>
+      </Link>
     </GlassTooltipWrap>
   );
 });
@@ -71,7 +70,6 @@ type DashboardSidebarProps = {
   navItems: readonly SidebarNavItem[];
   active: string;
   collapsed: boolean;
-  onSelect: (id: string) => void;
   onToggle: () => void;
   onSignOut?: () => void;
 };
@@ -80,7 +78,6 @@ function DashboardSidebarComponent({
   navItems,
   active,
   collapsed,
-  onSelect,
   onToggle,
   onSignOut,
 }: DashboardSidebarProps) {
@@ -98,21 +95,26 @@ function DashboardSidebarComponent({
             collapsed ? "justify-center" : "justify-start",
           )}
         >
-          {collapsed ? (
-            <FridayLogo size={28} />
-          ) : (
-            <FridayLogo wordmarkSize="sm" className="min-w-0" />
-          )}
+          <Link
+            href="/"
+            aria-label="Go to dashboard"
+            className="inline-flex min-w-0 cursor-pointer items-center"
+          >
+            {collapsed ? (
+              <FridayLogo size={28} />
+            ) : (
+              <FridayLogo wordmarkSize="sm" className="min-w-0" />
+            )}
+          </Link>
         </div>
 
         <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto overscroll-contain px-2 py-2 text-sm">
           {navItems.map((item) => (
-            <SidebarNavButton
+            <SidebarNavLink
               key={item.id}
               item={item}
               active={item.id === active}
               collapsed={collapsed}
-              onSelect={onSelect}
             />
           ))}
         </nav>
@@ -160,3 +162,87 @@ function DashboardSidebarComponent({
 }
 
 export const DashboardSidebar = memo(DashboardSidebarComponent);
+
+type DashboardMobileNavProps = {
+  navItems: readonly SidebarNavItem[];
+  active: string;
+  open: boolean;
+  onClose: () => void;
+  onSignOut?: () => void;
+};
+
+function DashboardMobileNavComponent({
+  navItems,
+  active,
+  open,
+  onClose,
+  onSignOut,
+}: DashboardMobileNavProps) {
+  if (!open) return null;
+
+  return (
+    <div
+      id="mobile-nav"
+      className="fixed inset-0 z-50 lg:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Navigation"
+    >
+      <div className="flex h-full min-h-0 flex-col bg-[#0c1b1e]">
+        <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 sm:h-16 sm:px-6">
+          <Link
+            href="/"
+            aria-label="Go to dashboard"
+            className="inline-flex min-w-0 cursor-pointer items-center"
+            onClick={onClose}
+          >
+            <FridayLogo wordmarkSize="sm" className="min-w-0" />
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 cursor-pointer items-center justify-center rounded border border-white/15 text-white/70 transition-colors hover:border-white/30 hover:text-white"
+            aria-label="Close menu"
+          >
+            <X className="h-5 w-5" strokeWidth={1.75} />
+          </button>
+        </div>
+
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-4 text-sm">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = item.id === active;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                aria-current={isActive ? "page" : undefined}
+                onClick={onClose}
+                className={cn(navLink({ active: isActive, layout: "row" }), "min-h-12 w-full px-4 py-3")}
+              >
+                {Icon ? <Icon className={ICON_CLASS} strokeWidth={1.75} aria-hidden /> : null}
+                <span className="min-w-0 flex-1 truncate capitalize">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="shrink-0 border-t border-white/10 p-3">
+          <button
+            type="button"
+            onClick={onSignOut}
+            className={cn(
+              "flex min-h-12 w-full cursor-pointer items-center gap-3 rounded px-4 py-3 text-sm",
+              "bg-red-500/[0.06] text-red-300 hover:bg-red-500/15 hover:text-red-200",
+            )}
+          >
+            <LogOut className={ICON_CLASS} strokeWidth={1.75} aria-hidden />
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export const DashboardMobileNav = memo(DashboardMobileNavComponent);

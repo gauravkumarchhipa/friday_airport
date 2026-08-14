@@ -189,3 +189,33 @@ export type WeeklyEpisodeRow = {
   paxAffected: number;
   impact: string;
 };
+
+export type AlertSeverity = "critical" | "warning" | "recovering";
+export type AlertType = "5m" | "10m" | "predicted";
+export type AlertStatus = "active" | "acknowledged" | "assigned" | "resolved";
+
+export type SupervisorAlert = {
+  id: string;
+  severity: AlertSeverity;
+  zone: string;
+  counter: string;
+  type: AlertType;
+  etaMin: number | null;
+  queueLen?: number;
+  waiting5m?: number;
+  waiting10m?: number;
+  recommendation: string;
+  createdAt: string;
+  status: AlertStatus;
+  assignedTo?: string;
+};
+
+export type AlertAuditAction = "ack" | "assign" | "resolve";
+
+export type AlertAuditEntry = {
+  id: string;
+  alertId: string;
+  action: AlertAuditAction;
+  at: string;
+  actor: string;
+};

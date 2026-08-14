@@ -1,4 +1,5 @@
 import type {
+  AlertType,
   BreachAttribution,
   CounterLive,
   FlightBankRec,
@@ -14,6 +15,7 @@ import type {
   RootCause,
   SlaPoint,
   SuggestedAction,
+  SupervisorAlert,
   TerminalId,
   WeeklyEpisodeRow,
 } from "./types";
@@ -1717,4 +1719,101 @@ export function getWeeklyView(airline: string, _dateRange: string) {
       ? WEEKLY_BANKS
       : WEEKLY_BANKS.filter((row) => row.airline === airline);
   return { episodes, banks };
+}
+
+type SupervisorAlertSeed = Omit<SupervisorAlert, "createdAt"> & { ageSec: number };
+
+const SUPERVISOR_ALERT_SEEDS: SupervisorAlertSeed[] = [
+  {
+    id: "alt-c12-pred",
+    severity: "critical",
+    zone: "B",
+    counter: "C12",
+    type: "predicted",
+    etaMin: 7,
+    queueLen: 62,
+    waiting5m: 41,
+    waiting10m: 10,
+    recommendation: "Open +1 counter",
+    status: "active",
+    ageSec: 48,
+  },
+  {
+    id: "alt-c12-10m",
+    severity: "critical",
+    zone: "B",
+    counter: "C12",
+    type: "10m",
+    etaMin: null,
+    waiting10m: 10,
+    recommendation: "Open +1 counter",
+    status: "active",
+    ageSec: 96,
+  },
+  {
+    id: "alt-c12-5m",
+    severity: "warning",
+    zone: "B",
+    counter: "C12",
+    type: "5m",
+    etaMin: null,
+    waiting5m: 41,
+    recommendation: "Pull 1 agent from C18",
+    status: "active",
+    ageSec: 132,
+  },
+  {
+    id: "alt-c13-rec",
+    severity: "recovering",
+    zone: "B",
+    counter: "C13",
+    type: "5m",
+    etaMin: null,
+    waiting5m: 3,
+    recommendation: "Hold current staffing",
+    status: "active",
+    ageSec: 210,
+  },
+  {
+    id: "alt-c14-pred",
+    severity: "warning",
+    zone: "B",
+    counter: "C14",
+    type: "predicted",
+    etaMin: 11,
+    queueLen: 22,
+    recommendation: "Pre-open C15 for the next bank",
+    status: "active",
+    ageSec: 180,
+  },
+  {
+    id: "alt-c07-5m",
+    severity: "warning",
+    zone: "A",
+    counter: "C07",
+    type: "5m",
+    etaMin: null,
+    waiting5m: 6,
+    recommendation: "Monitor — flex agent on standby",
+    status: "active",
+    ageSec: 240,
+  },
+];
+
+export const SUPERVISOR_ALERT_ZONES = ["A", "B", "C"] as const;
+export const SUPERVISOR_ALERT_TYPES: { id: AlertType; label: string }[] = [
+  { id: "predicted", label: "Predicted breach" },
+  { id: "5m", label: "> 5 min" },
+  { id: "10m", label: "> 10 min" },
+];
+
+export function getSupervisorAlerts(): SupervisorAlert[] {
+  const now = Date.now();
+  return SUPERVISOR_ALERT_SEEDS.map((seed) => {
+    const { ageSec, ...alert } = seed;
+    return {
+      ...alert,
+      createdAt: new Date(now - ageSec * 1000).toISOString(),
+    };
+  });
 }
