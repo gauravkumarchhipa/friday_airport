@@ -39,6 +39,17 @@
   --border: oklch(0.22 0 0);
   --ring: oklch(0.62 0.22 255);
   --color-input-border: rgba(255, 255, 255, 0.2);
+  --plan-surface: oklch(0.11 0.02 210);
+  --plan-line: oklch(0.62 0.02 240);
+  --plan-line-soft: oklch(0.42 0.02 240);
+  --plan-grid: oklch(0.28 0.02 240);
+  --pax-queue: oklch(0.72 0.16 232);
+  --pax-passer: oklch(0.62 0.01 240);
+  --pax-tail: oklch(0.82 0.16 82);
+  --pax-head: oklch(0.78 0.16 158);
+  --zone-calm: oklch(0.72 0.13 158);
+  --zone-warm: oklch(0.78 0.14 88);
+  --zone-hot: oklch(0.66 0.18 22);
 }
 
 @layer base {
@@ -113,31 +124,9 @@
   border-radius: 10px;
 }
 
-@keyframes live-queue-pax-drift {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(1.4px, -6px); }
-}
-
-@keyframes live-passerby-walk {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(7px, -3px); }
-  50% { transform: translate(12px, 4px); }
-  75% { transform: translate(5px, 8px); }
-}
-
 @keyframes live-status-ping {
   0% { transform: scale(1); opacity: 0.7; }
   80%, 100% { transform: scale(2.6); opacity: 0; }
-}
-
-.live-queue-pax {
-  animation: live-queue-pax-drift 2.8s ease-in-out infinite;
-  will-change: transform;
-}
-
-.live-passerby {
-  animation: live-passerby-walk 6.5s ease-in-out infinite;
-  will-change: transform;
 }
 
 .live-status-ping {
@@ -160,8 +149,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .data-table-page-row-enter,
-  .live-queue-pax,
-  .live-passerby,
   .live-status-ping {
     animation: none;
   }

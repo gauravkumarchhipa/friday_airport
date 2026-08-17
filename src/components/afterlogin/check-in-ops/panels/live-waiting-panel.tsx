@@ -314,78 +314,80 @@ export function LiveWaitingPanel() {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.15fr)] xl:items-stretch">
-        <OpsCard title="Flights ranked by urgency" flush fill className="min-h-0">
-          <DataTable
-            columns={FLIGHT_COLUMNS}
-            rows={flightsTable.displayRows}
-            getRowKey={(row) => row.flight}
-            minWidthClass="min-w-[760px]"
-            scrollClassName="friday-slim-scrollbar h-full max-h-[420px] min-h-0 overflow-y-auto"
-            sorting={flightsTable.sortingEnabled}
-            filtering={flightsTable.filteringEnabled}
-            sortState={flightsTable.sortState}
-            filterState={flightsTable.filterState}
-            onSortCycle={flightsTable.cycleSort}
-            onFilterApply={flightsTable.applyFilter}
-            onFilterClear={flightsTable.clearFilter}
-            rowClassName={(row) =>
-              cn(
-                row.status === "critical" && "bg-red-500/15",
-                row.status === "warning" && "bg-amber-500/10",
-              )
-            }
-            emptyMessage="No flights match your filters"
-            emptyDescription="Try changing column filters, or clear them to show all Vietjet flights."
-            emptyActionLabel="Clear filters"
-            onEmptyAction={flightsTable.clearAllControls}
-            pageKey={airlineFilter}
-          />
-        </OpsCard>
+      <div className="grid min-h-0 min-w-0 gap-4 xl:h-[min(36rem,calc(100dvh-13rem))] xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)] xl:items-stretch">
+        <div className="flex h-full min-h-0 min-w-0 flex-col gap-4">
+          <OpsCard title="Flights ranked by urgency" flush fill className="min-h-0 flex-1">
+            <DataTable
+              columns={FLIGHT_COLUMNS}
+              rows={flightsTable.displayRows}
+              getRowKey={(row) => row.flight}
+              minWidthClass="min-w-[640px]"
+              scrollClassName="friday-slim-scrollbar min-h-0 overflow-auto"
+              sorting={flightsTable.sortingEnabled}
+              filtering={flightsTable.filteringEnabled}
+              sortState={flightsTable.sortState}
+              filterState={flightsTable.filterState}
+              onSortCycle={flightsTable.cycleSort}
+              onFilterApply={flightsTable.applyFilter}
+              onFilterClear={flightsTable.clearFilter}
+              rowClassName={(row) =>
+                cn(
+                  row.status === "critical" && "bg-red-500/15",
+                  row.status === "warning" && "bg-amber-500/10",
+                )
+              }
+              emptyMessage="No flights match your filters"
+              emptyDescription="Try changing column filters, or clear them to show all Vietjet flights."
+              emptyActionLabel="Clear filters"
+              onEmptyAction={flightsTable.clearAllControls}
+              pageKey={airlineFilter}
+            />
+          </OpsCard>
+
+          <OpsCard title="Counter dwell — >5 min and >10 min" flush fill className="min-h-0 flex-1">
+            <DataTable
+              columns={COUNTER_COLUMNS}
+              rows={countersTable.displayRows}
+              getRowKey={(row) => row.id}
+              minWidthClass="min-w-[640px]"
+              scrollClassName="friday-slim-scrollbar min-h-0 overflow-auto"
+              sorting={countersTable.sortingEnabled}
+              filtering={countersTable.filteringEnabled}
+              sortState={countersTable.sortState}
+              filterState={countersTable.filterState}
+              onSortCycle={countersTable.cycleSort}
+              onFilterApply={countersTable.applyFilter}
+              onFilterClear={countersTable.clearFilter}
+              rowClassName={(row) =>
+                cn(
+                  row.status === "critical" && "bg-red-500/15",
+                  row.status === "warning" && "bg-amber-500/10",
+                  focusCounterId === row.id && "outline outline-1 outline-white/25",
+                )
+              }
+              emptyMessage="No counters match your filters"
+              emptyDescription="Try changing column filters, or clear them to show all counters."
+              emptyActionLabel="Clear filters"
+              onEmptyAction={countersTable.clearAllControls}
+              pageKey={airlineFilter}
+            />
+          </OpsCard>
+        </div>
 
         <OpsCard
           title="Live queue map"
           fill
-          className="min-h-0"
+          className="min-h-0 p-3 sm:p-3 xl:h-full"
           action={<LiveStatusBadge />}
         >
           <LiveQueueMap
             counters={view.counters}
             onSelectCounter={setFocusCounterId}
             focusCounterId={focusCounterId}
-            className="h-full"
+            className="h-full min-h-0"
           />
         </OpsCard>
       </div>
-
-      <OpsCard title="Counter dwell — >5 min and >10 min" flush fill className="min-h-0">
-        <DataTable
-          columns={COUNTER_COLUMNS}
-          rows={countersTable.displayRows}
-          getRowKey={(row) => row.id}
-          minWidthClass="min-w-[760px]"
-          scrollClassName="friday-slim-scrollbar max-h-[280px] min-h-0 overflow-y-auto"
-          sorting={countersTable.sortingEnabled}
-          filtering={countersTable.filteringEnabled}
-          sortState={countersTable.sortState}
-          filterState={countersTable.filterState}
-          onSortCycle={countersTable.cycleSort}
-          onFilterApply={countersTable.applyFilter}
-          onFilterClear={countersTable.clearFilter}
-          rowClassName={(row) =>
-            cn(
-              row.status === "critical" && "bg-red-500/15",
-              row.status === "warning" && "bg-amber-500/10",
-              focusCounterId === row.id && "outline outline-1 outline-white/25",
-            )
-          }
-          emptyMessage="No counters match your filters"
-          emptyDescription="Try changing column filters, or clear them to show all counters."
-          emptyActionLabel="Clear filters"
-          onEmptyAction={countersTable.clearAllControls}
-          pageKey={airlineFilter}
-        />
-      </OpsCard>
 
       <div className="grid gap-4 md:grid-cols-3 md:items-stretch">
         <OpsCard title="Current focus flight" fill className="h-full">
