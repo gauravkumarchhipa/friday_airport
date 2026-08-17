@@ -1,110 +1,77 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
-  buildLiveMapPoints,
-  QUEUE_ZONES,
-  zoneFillForWait,
-  zoneStrokeForWait,
-} from "@/data/afterlogin/check-in-ops/live-map-data";
+  WORLD,
+  circulation,
+  columns,
+  leftCounters,
+  shell,
+  topDesks,
+  zonePath,
+  zones,
+  type Pt,
+  type ZoneDef,
+} from "@/data/afterlogin/check-in-ops/floorplan";
 import { LIVE_COUNTERS } from "@/data/afterlogin/check-in-ops/static-data";
 import type { CounterLive } from "@/data/afterlogin/check-in-ops/types";
 import { cn } from "@/lib/common/utils";
 
-const VIEW_W = 900;
-const VIEW_H = 440;
+type Poly = { pts: Pt[]; cum: number[]; len: number };
 
-const WALL = "rgba(255,255,255,0.28)";
-const WALL_DIM = "rgba(255,255,255,0.14)";
-const FURNITURE = "rgba(255,255,255,0.07)";
-const FURNITURE_STROKE = "rgba(255,255,255,0.22)";
-
-/** Architectural check-in desk island (top of a queue lane). */
-function DeskIsland({
-  x,
-  y,
-  w,
-  label,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  label: string;
-}) {
-  const bays = 3;
-  const bayW = w / bays;
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={28}
-        rx={2}
-        fill={FURNITURE}
-        stroke={FURNITURE_STROKE}
-        strokeWidth={1.2}
-      />
-      {Array.from({ length: bays - 1 }, (_, i) => (
-        <line
-          key={i}
-          x1={x + bayW * (i + 1)}
-          y1={y + 3}
-          x2={x + bayW * (i + 1)}
-          y2={y + 25}
-          stroke={WALL_DIM}
-          strokeWidth={1}
-        />
-      ))}
-      <rect
-        x={x + 4}
-        y={y + 28}
-        width={w - 8}
-        height={6}
-        fill="rgba(255,255,255,0.04)"
-        stroke={WALL_DIM}
-        strokeWidth={0.8}
-      />
-      <text
-        x={x + w / 2}
-        y={y + 18}
-        textAnchor="middle"
-        fill="rgba(255,255,255,0.5)"
-        fontSize={9}
-        fontFamily="ui-sans-serif, system-ui"
-      >
-        {label}
-      </text>
-    </g>
-  );
+function poly(pts: Pt[]): Poly {
+  const cum: number[] = [0];
+  for (let i = 1; i < pts.length; i++) {
+    const dx = pts[i]!.x - pts[i - 1]!.x;
+    const dy = pts[i]!.y - pts[i - 1]!.y;
+    cum.push(cum[i - 1]! + Math.hypot(dx, dy));
+  }
+  return { pts, cum, len: cum[cum.length - 1]! };
 }
 
-function QueueBarriers({
-  x,
-  y,
-  w,
-  h,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}) {
-  const mid1 = x + w * 0.33;
-  const mid2 = x + w * 0.66;
-  return (
-    <g stroke={WALL_DIM} strokeWidth={1} fill="none" strokeDasharray="3 3">
-      <line x1={mid1} y1={y + 10} x2={mid1} y2={y + h - 8} />
-      <line x1={mid2} y1={y + 10} x2={mid2} y2={y + h - 8} />
-      {[mid1, mid2].map((px) => (
-        <g key={px}>
-          <circle cx={px} cy={y + 10} r={1.6} fill="rgba(255,255,255,0.35)" stroke="none" />
-          <circle cx={px} cy={y + h - 8} r={1.6} fill="rgba(255,255,255,0.35)" stroke="none" />
-        </g>
-      ))}
-    </g>
-  );
+function at(p: Poly, s: number): Pt {
+  const d = Math.min(Math.max(s, 0), p.len);
+  let i = 1;
+  while (i < p.cum.length - 1 && p.cum[i]! < d) i++;
+  const t = (d - p.cum[i - 1]!) / Math.max(p.cum[i]! - p.cum[i - 1]!, 0.0001);
+  return {
+    x: p.pts[i - 1]!.x + (p.pts[i]!.x - p.pts[i - 1]!.x) * t,
+    y: p.pts[i - 1]!.y + (p.pts[i]!.y - p.pts[i - 1]!.y) * t,
+  };
+}
+
+type Pax = { s: number; target: number; jx: number; jy: number; ph: number };
+type Queue = { z: ZoneDef; path: Poly; pax: Pax[]; spacing: number; timer: number; join: number };
+type Walker = { p: Poly; s: number; v: number; jx: number; jy: number };
+type Staff = { p: Poly; s: number; v: number; dir: number };
+type ZoneTint = ZoneDef["tint"];
+type LegendKind = "pax" | "passer" | "tail" | "head";
+
+const LEGEND_ITEMS: { id: LegendKind; label: string; swatch: string }[] = [
+  { id: "pax", label: "Queueing pax", swatch: "rounded-full bg-[var(--pax-queue)]" },
+  { id: "passer", label: "Passer-by", swatch: "rounded-full bg-[var(--pax-passer)]" },
+  { id: "tail", label: "Tail", swatch: "bg-[var(--pax-tail)]" },
+  { id: "head", label: "Head", swatch: "bg-[var(--pax-head)]" },
+];
+
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
+function css(name: string, fallback: string) {
+  if (typeof window === "undefined") return fallback;
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
+
+function tintFromWait(waitMin: number | undefined, fallback: ZoneTint): ZoneTint {
+  if (waitMin == null) return fallback;
+  if (waitMin > 10) return "hot";
+  if (waitMin >= 5) return "warm";
+  return "calm";
+}
+
+function hitZone(x: number, y: number): ZoneDef | undefined {
+  return zones.find((z) => x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h);
 }
 
 export function LiveQueueMap({
@@ -115,204 +82,444 @@ export function LiveQueueMap({
 }: {
   onSelectCounter?: (counterId: string) => void;
   focusCounterId?: string | null;
-  /** Filtered counters for the active airline (drives zone tint + pax density). */
   counters?: CounterLive[];
   className?: string;
 }) {
-  const points = useMemo(() => buildLiveMapPoints(counters), [counters]);
-  const counterMap = useMemo(
-    () => new Map(counters.map((c) => [c.id, c])),
-    [counters],
-  );
-  const activeZones = useMemo(
-    () => QUEUE_ZONES.filter((zone) => counterMap.has(zone.counterId)),
-    [counterMap],
-  );
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const countersRef = useRef(counters);
+  const focusRef = useRef(focusCounterId);
+  const onSelectRef = useRef(onSelectCounter);
+  const [counts, setCounts] = useState<
+    { id: string; desk: string; n: number; wait: number; tint: ZoneTint }[]
+  >([]);
+  const [legendFocus, setLegendFocus] = useState<LegendKind | null>(null);
+  const legendFocusRef = useRef<LegendKind | null>(null);
+  const [graphFrame, setGraphFrame] = useState({ left: 8, top: 8, width: 0, height: 0 });
+
+  countersRef.current = counters;
+  focusRef.current = focusCounterId;
+  onSelectRef.current = onSelectCounter;
+  legendFocusRef.current = legendFocus;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const wrap = wrapRef.current;
+    if (!canvas || !wrap) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const palette = {
+      line: css("--plan-line", "oklch(0.62 0.02 240)"),
+      lineSoft: css("--plan-line-soft", "oklch(0.42 0.02 240)"),
+      grid: css("--plan-grid", "oklch(0.28 0.02 240)"),
+      pax: css("--pax-queue", "oklch(0.72 0.16 232)"),
+      passer: css("--pax-passer", "oklch(0.62 0.01 240)"),
+      tail: css("--pax-tail", "oklch(0.82 0.16 82)"),
+      head: css("--pax-head", "oklch(0.78 0.16 158)"),
+      calm: css("--zone-calm", "oklch(0.72 0.13 158)"),
+      warm: css("--zone-warm", "oklch(0.78 0.14 88)"),
+      hot: css("--zone-hot", "oklch(0.66 0.18 22)"),
+    };
+    const tintOf = (t: ZoneTint) =>
+      t === "calm" ? palette.calm : t === "warm" ? palette.warm : palette.hot;
+
+    const markerAlpha = (kind: LegendKind) => {
+      const focus = legendFocusRef.current;
+      if (!focus) return 1;
+      return focus === kind ? 1 : 0.12;
+    };
+    const markerScale = (kind: LegendKind) => {
+      const focus = legendFocusRef.current;
+      if (!focus) return 1;
+      return focus === kind ? 1.7 : 0.82;
+    };
+    const markerGlow = (kind: LegendKind, base = 0) => {
+      const focus = legendFocusRef.current;
+      if (focus === kind) return 18;
+      if (focus) return 0;
+      return base;
+    };
+
+    const shellP = shell.map(poly);
+    const countersP = leftCounters.map(poly);
+    const desksP = topDesks.map(poly);
+    const circP = circulation.map(poly);
+
+    const queues: Queue[] = zones.map((z) => {
+      const path = poly(zonePath(z));
+      const live = countersRef.current.find((c) => c.id === z.counterId);
+      const spacing = path.len / (z.capacity + 6);
+      const seeded = live
+        ? Math.max(4, Math.min(z.capacity, Math.round(live.queueLen * 1.45)))
+        : Math.round(z.capacity * rand(0.6, 0.95));
+      const n = seeded;
+      const pax: Pax[] = Array.from({ length: n }, (_, i) => ({
+        s: path.len - i * spacing,
+        target: path.len - i * spacing,
+        jx: rand(-1.6, 1.6),
+        jy: rand(-1.6, 1.6),
+        ph: rand(0, 6.283),
+      }));
+      return { z, path, pax, spacing, timer: rand(0, z.serveMs), join: 0 };
+    });
+
+    const walkers: Walker[] = Array.from({ length: 46 }, () => {
+      const p = circP[Math.floor(Math.random() * circP.length)]!;
+      return { p, s: Math.random() * p.len, v: rand(9, 26), jx: rand(-2, 2), jy: rand(-2, 2) };
+    });
+
+    const staff: Staff[] = Array.from({ length: 16 }, (_, i) => {
+      const x = 214 + (i % 8) * 96 + rand(-6, 6);
+      const y0 = i < 8 ? 158 : 166;
+      const p = poly([
+        { x: x - 22, y: y0 },
+        { x: x + 30, y: y0 + rand(-4, 4) },
+      ]);
+      return { p, s: Math.random() * p.len, v: rand(4, 11), dir: Math.random() > 0.5 ? 1 : -1 };
+    });
+    const kerbStaff: Staff[] = Array.from({ length: 9 }, (_, i) => {
+      const y = 232 + i * 56;
+      const p = poly([
+        { x: 146, y },
+        { x: 150, y: y + rand(14, 34) },
+      ]);
+      return { p, s: Math.random() * p.len, v: rand(3, 8), dir: 1 };
+    });
+
+    let dpr = 1;
+    let scale = 1;
+    let ox = 0;
+    let oy = 0;
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = wrap.getBoundingClientRect();
+      canvas.width = Math.max(1, Math.floor(r.width * dpr));
+      canvas.height = Math.max(1, Math.floor(r.height * dpr));
+      canvas.style.width = `${r.width}px`;
+      canvas.style.height = `${r.height}px`;
+      scale = Math.min(r.width / WORLD.w, r.height / WORLD.h);
+      ox = (r.width - WORLD.w * scale) / 2;
+      oy = (r.height - WORLD.h * scale) / 2;
+      setGraphFrame({
+        left: ox,
+        top: oy,
+        width: WORLD.w * scale,
+        height: WORLD.h * scale,
+      });
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(wrap);
+
+    const worldFromEvent = (event: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - r.left - ox) / scale,
+        y: (event.clientY - r.top - oy) / scale,
+      };
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      const { x, y } = worldFromEvent(event);
+      canvas.style.cursor = hitZone(x, y) ? "pointer" : "default";
+    };
+
+    const onPointerDown = (event: PointerEvent) => {
+      const { x, y } = worldFromEvent(event);
+      const zone = hitZone(x, y);
+      if (zone) onSelectRef.current?.(zone.counterId);
+    };
+
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerdown", onPointerDown);
+
+    const strokePoly = (p: Poly) => {
+      ctx.beginPath();
+      p.pts.forEach((pt, i) => (i ? ctx.lineTo(pt.x, pt.y) : ctx.moveTo(pt.x, pt.y)));
+      ctx.stroke();
+    };
+
+    const dot = (x: number, y: number, r: number, color: string, glow = 0) => {
+      if (glow) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = glow;
+      }
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    };
+
+    let raf = 0;
+    let last = performance.now();
+    let statTimer = 0;
+
+    const frame = (now: number) => {
+      const dt = Math.min(now - last, 60);
+      last = now;
+      const t = now / 1000;
+      const liveById = new Map(countersRef.current.map((c) => [c.id, c]));
+
+      queues.forEach((q) => {
+        q.timer += dt;
+        if (q.timer >= q.z.serveMs) {
+          q.timer = 0;
+          if (q.pax.length) q.pax.shift();
+        }
+        q.join += dt;
+        const joinRate = q.z.serveMs * rand(0.85, 1.15);
+        if (q.join > joinRate && q.pax.length < q.z.capacity) {
+          q.join = 0;
+          const back = q.pax.length ? q.pax[q.pax.length - 1]!.target - q.spacing : q.path.len;
+          q.pax.push({
+            s: Math.max(back - q.spacing * 2, 0),
+            target: back,
+            jx: rand(-1.6, 1.6),
+            jy: rand(-1.6, 1.6),
+            ph: rand(0, 6.283),
+          });
+        }
+        q.pax.forEach((p, i) => {
+          p.target = q.path.len - i * q.spacing;
+          p.s += (p.target - p.s) * Math.min(dt / 260, 1);
+        });
+      });
+
+      walkers.forEach((w) => {
+        w.s = (w.s + (w.v * dt) / 1000) % w.p.len;
+      });
+      [...staff, ...kerbStaff].forEach((s) => {
+        s.s += (s.dir * s.v * dt) / 1000;
+        if (s.s > s.p.len) {
+          s.s = s.p.len;
+          s.dir = -1;
+        }
+        if (s.s < 0) {
+          s.s = 0;
+          s.dir = 1;
+        }
+      });
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setTransform(dpr * scale, 0, 0, dpr * scale, ox * dpr, oy * dpr);
+      const lw = 1 / scale;
+
+      ctx.strokeStyle = palette.grid;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = lw;
+      for (let x = 0; x <= WORLD.w; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, WORLD.h);
+        ctx.stroke();
+      }
+      for (let y = 0; y <= WORLD.h; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(WORLD.w, y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.lineWidth = lw * 1.4;
+      ctx.strokeStyle = palette.line;
+      ctx.globalAlpha = 0.85;
+      shellP.forEach(strokePoly);
+      ctx.lineWidth = lw;
+      ctx.globalAlpha = 0.6;
+      ctx.strokeStyle = palette.lineSoft;
+      countersP.forEach(strokePoly);
+      desksP.forEach(strokePoly);
+      ctx.globalAlpha = 0.75;
+      columns.forEach((c) => {
+        ctx.strokeRect(c.x - 5, c.y - 5, 10, 10);
+      });
+      ctx.globalAlpha = 1;
+
+      queues.forEach((q) => {
+        const live = liveById.get(q.z.counterId);
+        const tint = tintFromWait(live?.joinWaitP50, q.z.tint);
+        const color = tintOf(tint);
+        const load = q.pax.length / q.z.capacity;
+        const focused = focusRef.current === q.z.counterId;
+        ctx.save();
+        ctx.globalAlpha = 0.1 + load * 0.12;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.roundRect(q.z.x, q.z.y, q.z.w, q.z.h, 6);
+        ctx.fill();
+        ctx.globalAlpha = 0.45 + 0.25 * Math.sin(t * 2 + q.z.x);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lw * (focused ? 3.2 : 1.6);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.setLineDash([4 * lw, 6 * lw]);
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.28;
+        ctx.lineWidth = lw;
+        strokePoly(q.path);
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = color;
+        ctx.font = "11px ui-monospace, monospace";
+        ctx.fillText(`Desk ${q.z.desk}`, q.z.x + 2, q.z.y - 9);
+        ctx.restore();
+      });
+
+      walkers.forEach((w) => {
+        const p = at(w.p, w.s);
+        ctx.globalAlpha = markerAlpha("passer");
+        const scaleN = markerScale("passer");
+        dot(p.x + w.jx, p.y + w.jy, 2.4 * scaleN, palette.passer, markerGlow("passer"));
+        ctx.globalAlpha = 1;
+      });
+
+      ctx.globalAlpha = legendFocusRef.current ? 0.1 : 1;
+      [...staff, ...kerbStaff].forEach((s) => {
+        const p = at(s.p, s.s);
+        dot(p.x, p.y, 2.8, palette.head, legendFocusRef.current ? 0 : 8);
+      });
+      ctx.globalAlpha = 1;
+
+      queues.forEach((q) => {
+        q.pax.forEach((p, i) => {
+          const pt = at(q.path, p.s);
+          const bob = Math.sin(t * 3 + p.ph) * 0.6;
+          if (i === 0) {
+            const s = markerScale("head");
+            const half = 3 * s;
+            ctx.globalAlpha = markerAlpha("head");
+            ctx.fillStyle = palette.head;
+            ctx.shadowColor = palette.head;
+            ctx.shadowBlur = markerGlow("head", 10);
+            ctx.fillRect(pt.x - half, pt.y - half, half * 2, half * 2);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+          } else if (i === q.pax.length - 1) {
+            const s = markerScale("tail");
+            const half = 2.6 * s;
+            ctx.globalAlpha = markerAlpha("tail");
+            ctx.fillStyle = palette.tail;
+            ctx.shadowColor = palette.tail;
+            ctx.shadowBlur = markerGlow("tail", 10);
+            ctx.fillRect(pt.x - half, pt.y - half, half * 2, half * 2);
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+          } else {
+            ctx.globalAlpha = markerAlpha("pax");
+            const scaleN = markerScale("pax");
+            dot(
+              pt.x + p.jx * 0.4,
+              pt.y + p.jy * 0.4 + bob,
+              2.6 * scaleN,
+              palette.pax,
+              markerGlow("pax", 6),
+            );
+            ctx.globalAlpha = 1;
+          }
+        });
+      });
+
+      statTimer += dt;
+      if (statTimer > 700) {
+        statTimer = 0;
+        setCounts(
+          queues.map((q) => {
+            const live = liveById.get(q.z.counterId);
+            return {
+              id: q.z.id,
+              desk: q.z.desk,
+              n: q.pax.length,
+              wait: live ? Math.round(live.joinWaitP50) : Math.round((q.pax.length * q.z.serveMs) / 1000 / 6),
+              tint: tintFromWait(live?.joinWaitP50, q.z.tint),
+            };
+          }),
+        );
+      }
+
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
   return (
-    <div className={cn("flex w-full flex-col gap-2", className)}>
-      <div className="w-full overflow-hidden bg-transparent">
-        <svg
-          viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
-          preserveAspectRatio="xMidYMid meet"
-          className="block h-auto w-full bg-transparent"
-          style={{ aspectRatio: `${VIEW_W} / ${VIEW_H}` }}
-          role="img"
-          aria-label="Live check-in hall floor plan with anonymised passenger points"
+    <div className={cn("relative isolate flex h-full min-h-0 w-full flex-col gap-2", className)}>
+      <div
+        ref={wrapRef}
+        className="relative z-0 min-h-[220px] w-full flex-1 overflow-hidden bg-transparent"
+      >
+        <canvas ref={canvasRef} className="relative z-0 block size-full" />
+        <p
+          className="pointer-events-none absolute z-20 text-[11px] leading-none font-medium text-white/55"
+          style={{ left: graphFrame.left + 10, top: graphFrame.top + 8 }}
         >
-          <rect
-            x="27"
-            y="36"
-            width="846"
-            height="360"
-            fill="none"
-            stroke={WALL}
-            strokeWidth="2"
-            rx="2"
-          />
-
-          <text x="188" y="410" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="8">
-            Entrance A
-          </text>
-          <text x="480" y="410" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="8">
-            Entrance B
-          </text>
-          <text x="742" y="410" textAnchor="middle" fill="rgba(255,255,255,0.28)" fontSize="8">
-            Entrance C
-          </text>
-
-          <g fill="rgba(255,255,255,0.08)" stroke={WALL_DIM} strokeWidth="1">
-            <rect x="54" y="52" width="21" height="14" rx="1" />
-            <rect x="54" y="200" width="21" height="14" rx="1" />
-            <rect x="54" y="340" width="21" height="14" rx="1" />
-            <rect x="825" y="52" width="21" height="14" rx="1" />
-            <rect x="825" y="200" width="21" height="14" rx="1" />
-            <rect x="825" y="340" width="21" height="14" rx="1" />
-            <rect x="375" y="52" width="18" height="12" rx="1" />
-            <rect x="375" y="340" width="18" height="12" rx="1" />
-          </g>
-
-          <g stroke="rgba(255,255,255,0.1)" strokeWidth="1.25" strokeDasharray="7 5" fill="none">
-            <path d="M 375 70 L 375 360" />
-            <path d="M 60 236 L 840 236" />
-          </g>
-
-          <rect
-            x="84"
-            y="44"
-            width="732"
-            height="10"
-            fill="rgba(255,255,255,0.04)"
-            stroke={WALL_DIM}
-            strokeWidth="1"
-          />
-          <text x="450" y="52" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="8">
-            Bag drop / rear wall
-          </text>
-
-          <DeskIsland x={84} y={52} w={117} label="Desk · C03" />
-          <DeskIsland x={222} y={52} w={117} label="Desk · C07" />
-          <DeskIsland x={453} y={46} w={144} label="Desk · C12" />
-          <DeskIsland x={621} y={46} w={144} label="Desk · C14" />
-          <DeskIsland x={198} y={220} w={129} label="Desk · C21" />
-          <DeskIsland x={477} y={220} w={129} label="Desk · C18" />
-
-          <g stroke={WALL} strokeWidth="1.5" fill="none">
-            <path d="M 360 70 L 360 210" />
-            <path d="M 435 70 L 435 210" />
-            <path d="M 360 250 L 360 360" />
-            <path d="M 435 250 L 435 360" />
-          </g>
-
-          {activeZones.map((zone) => {
-            const counter = counterMap.get(zone.counterId);
-            const wait = counter?.joinWaitP50 ?? 0;
-            const focused = focusCounterId === zone.counterId;
+          Hall A · floor plan
+        </p>
+        <ul className="absolute top-1.5 right-2 z-20 flex flex-wrap items-center justify-end gap-0.5 font-mono text-[10px] leading-none sm:gap-1">
+          {LEGEND_ITEMS.map((item) => {
+            const active = legendFocus === item.id;
+            const muted = legendFocus != null && !active;
             return (
-              <g key={zone.id}>
-                <rect
-                  x={zone.x}
-                  y={zone.y}
-                  width={zone.w}
-                  height={zone.h}
-                  rx="3"
-                  fill={zoneFillForWait(wait)}
-                  stroke={zoneStrokeForWait(wait)}
-                  strokeWidth={focused ? 2.5 : 1.4}
-                  className="cursor-pointer"
-                  onClick={() => onSelectCounter?.(zone.counterId)}
-                />
-                <QueueBarriers x={zone.x} y={zone.y} w={zone.w} h={zone.h} />
-                <text
-                  x={zone.x + 8}
-                  y={zone.y + 16}
-                  fill="rgba(255,255,255,0.75)"
-                  fontSize="11"
-                  fontWeight="700"
-                  className="pointer-events-none"
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => setLegendFocus((prev) => (prev === item.id ? null : item.id))}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1.5 bg-[#0c1b1e]/80 px-1.5 py-1 text-white/60 transition-colors",
+                    "hover:bg-white/[0.08] hover:text-white/90",
+                    active && "bg-white/[0.12] text-white",
+                    muted && "text-white/30",
+                  )}
                 >
-                  {zone.label}
-                </text>
-                <rect
-                  x={zone.head.x - 5}
-                  y={zone.head.y - 5}
-                  width="10"
-                  height="10"
-                  rx="1.5"
-                  fill="#34d399"
-                  stroke="rgba(0,0,0,0.4)"
-                  strokeWidth="0.6"
-                />
-                <rect
-                  x={zone.tail.x - 5}
-                  y={zone.tail.y - 5}
-                  width="10"
-                  height="10"
-                  rx="1.5"
-                  fill="#fcd34d"
-                  stroke="rgba(0,0,0,0.4)"
-                  strokeWidth="0.6"
-                />
-              </g>
+                  <span className={cn("size-2 shrink-0", item.swatch)} />
+                  {item.label}
+                </button>
+              </li>
             );
           })}
-
-          {points.map((p, index) => (
-            <g key={p.id} transform={`translate(${p.x} ${p.y})`}>
-              <circle
-                cx={0}
-                cy={0}
-                r={p.kind === "queue" ? 3.4 : 2.5}
-                fill={p.kind === "queue" ? "#38bdf8" : "rgba(200,210,220,0.45)"}
-                opacity={p.kind === "queue" ? 0.95 : 0.75}
-                className={p.kind === "queue" ? "live-queue-pax" : "live-passerby"}
-                style={{
-                  animationDelay: `${(index % 14) * 0.16}s`,
-                  animationDuration:
-                    p.kind === "queue"
-                      ? `${2.4 + (index % 5) * 0.28}s`
-                      : `${5.8 + (index % 6) * 0.45}s`,
-                }}
-              />
-            </g>
-          ))}
-
-          <g transform="translate(681, 12)">
-            <rect
-              x="0"
-              y="0"
-              width="192"
-              height="22"
-              rx="3"
-              fill="transparent"
-              stroke="rgba(255,255,255,0.12)"
-            />
-            <circle cx="12" cy="11" r="3.2" fill="#38bdf8" />
-            <text x="20" y="14" fill="rgba(255,255,255,0.55)" fontSize="8">
-              Queuing pax
-            </text>
-            <circle cx="78" cy="11" r="2.6" fill="rgba(200,210,220,0.55)" />
-            <text x="85" y="14" fill="rgba(255,255,255,0.55)" fontSize="8">
-              Passer-by
-            </text>
-            <rect x="128" y="7" width="8" height="8" rx="1" fill="#fcd34d" />
-            <text x="139" y="14" fill="rgba(255,255,255,0.55)" fontSize="8">
-              Tail
-            </text>
-            <rect x="160" y="7" width="8" height="8" rx="1" fill="#34d399" />
-            <text x="171" y="14" fill="rgba(255,255,255,0.55)" fontSize="8">
-              Head
-            </text>
-          </g>
-
-          <text x="42" y="28" fill="rgba(255,255,255,0.4)" fontSize="10" fontWeight="600">
-            Hall A · floor plan
-          </text>
-          <text x="42" y="432" fill="rgba(255,255,255,0.28)" fontSize="8">
-            Anonymised points · no video · zone tint = dwell &lt;5 / 5–10 / &gt;10 min
-          </text>
-        </svg>
+        </ul>
+        <p
+          className="pointer-events-none absolute z-20 max-w-[calc(100%-1.5rem)] truncate bg-[#0c1b1e]/85 px-1.5 py-0.5 font-mono text-[10px] leading-none text-white/55"
+          style={{
+            left: graphFrame.left + 10,
+            top: Math.max(8, graphFrame.top + graphFrame.height - 22),
+          }}
+        >
+          Anonymised points · no video · zone tint = dwell &lt;5 / 5–10 / &gt;10 min
+        </p>
       </div>
+
+      <ul className="relative z-20 grid w-full shrink-0 grid-cols-2 gap-2 bg-[#0c1b1e] sm:grid-cols-3 xl:grid-cols-5">
+        {counts.map((c) => (
+          <li
+            key={c.id}
+            className="flex min-h-[2.25rem] min-w-0 items-center justify-center border border-white/10 bg-[#101f23] px-2 py-1.5"
+          >
+            <p className="w-full truncate text-center font-mono text-[11px] leading-none text-white/55">
+              <span className="font-medium text-white">{c.desk}</span>
+              <span>
+                {" "}
+                · {c.n} pax · ~{c.wait} min
+              </span>
+            </p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

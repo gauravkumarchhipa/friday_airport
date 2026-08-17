@@ -1,12 +1,18 @@
 "use client";
 
 import { Clock3, ShieldCheck } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { DashboardSurfaceCard } from "@/components/common/dashboard-surface-card";
-import { CHECK_IN_META } from "@/data/afterlogin/check-in-ops/static-data";
 import type { QueueStatus } from "@/data/afterlogin/check-in-ops/types";
 import { cn } from "@/lib/common/utils";
+
+function formatClock(date: Date) {
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss}`;
+}
 
 export function PrivacyBadge({ className }: { className?: string }) {
   return (
@@ -23,6 +29,15 @@ export function PrivacyBadge({ className }: { className?: string }) {
 }
 
 export function DataFreshnessBadge({ className }: { className?: string }) {
+  const [clock, setClock] = useState(() => formatClock(new Date()));
+
+  useEffect(() => {
+    const tick = () => setClock(formatClock(new Date()));
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
   return (
     <span
       className={cn(
@@ -35,7 +50,7 @@ export function DataFreshnessBadge({ className }: { className?: string }) {
         <span className="relative h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
       </span>
       <Clock3 className="h-3 w-3" strokeWidth={1.75} aria-hidden />
-      Data {CHECK_IN_META.refreshedAt}
+      Data {clock}
     </span>
   );
 }
@@ -115,8 +130,8 @@ export function OpsCard({
       contentClassName={cn(fill && "flex h-full min-h-0 flex-col")}
     >
       {title ? (
-        <div className="flex shrink-0 items-center justify-between gap-3">
-          <h2 className="text-sm font-medium text-white/70">{title}</h2>
+        <div className="flex shrink-0 items-center justify-between gap-3 leading-none">
+          <h2 className="text-sm leading-none font-medium text-white/70">{title}</h2>
           {action}
         </div>
       ) : null}
@@ -125,7 +140,7 @@ export function OpsCard({
           title && "mt-3",
           fill && "flex min-h-0 flex-1 flex-col",
           flush && title && "-mx-4 sm:-mx-5",
-          flush && fill && "flex min-h-0 flex-col",
+          flush && fill && "min-h-0 flex-1",
         )}
       >
         {children}
